@@ -3,3 +3,4 @@
 
 ## 文書
 - [要件定義](docs/requirements.md)
+- [データ設計](docs/data-model.md)
