@@ -7,10 +7,10 @@
 - 社内業務依頼管理＆作業テンプレートアプリ（AIエンジニア養成コースの課題。TaskManagement に続く、2本目のアプリ）
 - 他部署からの制作依頼（通関書類、HP、取扱説明書、動画など）を、表（一覧）と詳細モーダルで管理する。使う人は1人
 - リポジトリ：`RieShinohara/BizRequestTracker`（**公開リポジトリ**）
-- 技術：バックエンドは Python + FastAPI、DBは SQLite、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など
+- 技術：バックエンドは Python + FastAPI、DBは SQLite、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など。画面のビルドツールは Vite（スクールのメンターに使ってよいと確認済み）
 - **課題の条件：TaskManagement で使った技術を、すべて変える**（TypeScript だけは同じでよい）。技術を選ぶときは、TaskManagement と同じものを使っていないか確認する
 - デプロイ先：AWS（EC2。SQLite は EC2 の中。RDS は使わない）。デプロイ中に画面録画をして、終わったら `destroy` する
-- 状況：要件定義の前（リポジトリを作った直後）。決まっている仕様は、要件定義の文書（`docs/`）にまとめていく
+- 状況：要件定義（[docs/requirements.md](docs/requirements.md)）とデータ設計（[docs/data-model.md](docs/data-model.md)）が完了。次は、画面のプロトタイプ（`prototype/`）
 - 構成（予定）：`docs/`（要件定義）、`backend/`、`frontend/`、`terraform/`、`prototype/`（使い捨ての試作）、`notes/`（学習ノート）
 
 ## 2. ユーザーへの接し方
