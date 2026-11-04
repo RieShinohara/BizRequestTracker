@@ -7,7 +7,7 @@
 | | 1本目（タスク管理） | 2本目（今回） |
 |---|---|---|
 | サーバー | Java + Spring Boot | **Python + FastAPI** |
-| データベース | PostgreSQL（Docker） | **SQLite**（ファイル1つ） |
+| データベース | PostgreSQL（Docker） | ~~SQLite（ファイル1つ）~~ → **MySQL（RDS）** に変更（[02](02-requirements-docs.md) を参照） |
 | 画面 | React + Tailwind CSS | **Vue 3 + Vuetify** |
 | ドラッグ＆ドロップ | dnd-kit | **vue-draggable-plus**（予定） |
 | ビルドの道具 | Vite | Vite（メンターに確認して、同じものを使ってよいと確認済み） |
@@ -147,7 +147,7 @@ npm run build    # 型チェックと、本番用のビルド
 
 ## 7. 次にやること
 1. API の設計（どんな URL で、何ができるか）
-2. バックエンドの骨組み（Python + FastAPI + SQLite、テスト、静的チェック）
+2. バックエンドの骨組み（Python + FastAPI + MySQL、テスト、静的チェック）
 3. 機能ごとの API。そのあとに画面（本番）
 
 参考：[要件定義](../docs/requirements.md)、[データ設計](../docs/data-model.md)、[プロトタイプ](../prototype/README.md)
