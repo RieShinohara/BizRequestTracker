@@ -7,10 +7,10 @@
 - 社内業務依頼管理＆作業テンプレートアプリ（AIエンジニア養成コースの課題。TaskManagement に続く、2本目のアプリ）
 - 他部署からの制作依頼（通関書類、HP、取扱説明書、動画など）を、表（一覧）と詳細モーダルで管理する。使う人は1人
 - リポジトリ：`RieShinohara/BizRequestTracker`（**公開リポジトリ**）
-- 技術：バックエンドは Python + FastAPI、DBは SQLite、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など。画面のビルドツールは Vite（スクールのメンターに使ってよいと確認済み）
-- **課題の条件：TaskManagement で使った技術を、すべて変える**（TypeScript だけは同じでよい）。技術を選ぶときは、TaskManagement と同じものを使っていないか確認する
-- デプロイ先：AWS（EC2。SQLite は EC2 の中。RDS は使わない）。デプロイ中に画面録画をして、終わったら `destroy` する
-- 状況：要件定義（[docs/requirements.md](docs/requirements.md)）とデータ設計（[docs/data-model.md](docs/data-model.md)）が完了。次は、画面のプロトタイプ（`prototype/`）
+- 技術：バックエンドは Python + FastAPI（SQLAlchemy + Alembic、uv）、DBは MySQL、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など。画面のビルドツールは Vite（スクールのメンターに使ってよいと確認済み）。詳しい決定と1本目との比較は [docs/tech-stack.md](docs/tech-stack.md)
+- **課題の条件：TaskManagement から、言語とフレームワークと DB を変える**（メンターに確認済み：Java・Spring Boot と React を変えればよい。DB は PostgreSQL 以外）。TypeScript、Vite は同じでよい。Git・GitHub・GitHub Actions・Terraform・AWS は、作業用の道具なので同じでよい。技術を選ぶときは、[docs/tech-stack.md](docs/tech-stack.md) の比較表で確認する
+- デプロイ先：AWS（EC2 ＋ RDS。**Terraform の構成は、1本目と同じ**）。DB は RDS が対応するものから選ぶ（SQLite は RDS 非対応のため使わない）。デプロイ中に画面録画をして、終わったら `destroy` する
+- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）の整備中（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件は完了。残りはユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）と、画面のプロトタイプ（`prototype/`）は完了。次は、API の設計
 - 構成（予定）：`docs/`（要件定義）、`backend/`、`frontend/`、`terraform/`、`prototype/`（使い捨ての試作）、`notes/`（学習ノート）
 
 ## 2. ユーザーへの接し方
@@ -85,14 +85,14 @@
 ## 4. 公開リポジトリとしての注意
 - **パスワード、キー、個人情報を、コミットしない。** 秘密は `.env`（コミットしない）に書く。見本は `.env.example`
 - **サンプルデータは、すべて架空にする。** 実在の会社名、人名、実際の依頼内容を、入れない
-- SQLite のDBファイル（`*.db`）は、コミットしない（`.gitignore` で除外する）
+- データベースの中身や、`mysqldump` で書き出したファイル（`*.sql`、`*.dump`）は、コミットしない（`.gitignore` で除外する）。DB のパスワードは `.env`（コミットしない）に書く
 - 権利が不明な画像や文章を、入れない（画像は、出典とライセンスを、`CREDITS.md` に書く）
 - **AWS の秘密を、コミットしない・チャットに貼らない。** アクセスキー、パスフレーズ、SSH の**秘密鍵**、アカウント ID は、出さない。`terraform.tfvars`、`*.tfstate`、`*.tfplan` も、コミットしない
 - **画面録画・スクリーンショットに、IP アドレスやアカウント ID が映らないようにする**（README に載せる前に確認する）
 
 ## 5. 開発のコマンド
 アプリの骨組みを作ったら、ここに表を書く（起動、テスト、静的チェック、ビルド、整形）。
-予定のツール：バックエンドは pytest・ruff、画面は Vitest・ESLint・Prettier・`npm run build`。
+予定のツール：バックエンドは uv・pytest・ruff、画面は Vitest・ESLint・Prettier・`npm run build`。
 
 - **ポートは固定**にする（決まったら、ここに書く）。サーバーを起動する前に、使用中でないか確認し、別のポートでは起動しない。無関係なプロセスは、ユーザーの確認なしに止めない
 - Windows の PowerShell では、`npm` は `npm.cmd` で実行する
