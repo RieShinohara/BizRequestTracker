@@ -1,6 +1,6 @@
 # データ設計
 
-DB（SQLite）に作る表の設計。要件は [requirements.md](requirements.md) を参照。
+DB（MySQL）に作る表の設計。要件は [requirements.md](requirements.md) を参照。
 決まっていないことが出たら、ユーザーに確認してから、この文書を更新する。
 
 ## 1. 表と関係の図
