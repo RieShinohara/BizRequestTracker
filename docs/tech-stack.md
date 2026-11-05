@@ -42,7 +42,7 @@
 | DB の扱い方 | SQLAlchemy ＋ Alembic | Python で最も使われている組み合わせ。テーブルの変更の履歴が残る |
 | サーバー側のパッケージ管理 | uv | Python 本体の導入と、部品・仮想環境の管理を、1つの道具で行う |
 | サーバー側のテスト・静的チェック | pytest、ruff | |
-| 画面 | Vue 3 ＋ TypeScript ＋ Vuetify | |
+| 画面 | Vue 3 ＋ TypeScript ＋ Vuetify | 選んだ理由：課題の条件で React を変える必要があった。先生が Material UI（Material Design の部品集）を使ったと聞き、Vue にも同じ種類の部品集（Vuetify）があると知った。表・ボタン・モーダル・入力欄が最初から用意されていて、一覧と詳細モーダルの画面に合う（ユーザーの記憶による。当時の比較の記録はない） |
 | ドラッグ＆ドロップ | vue-draggable-plus | |
 | 画面のビルド | Vite | |
 | 画面のテスト・静的チェック・整形 | Vitest、ESLint、Prettier | |
