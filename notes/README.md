@@ -7,9 +7,10 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 |---|---|
 | [01-requirements-to-prototype.md](01-requirements-to-prototype.md) | 作業の進め方（Issue → ブランチ → PR）、要件定義のヒアリング、データ設計、画面のプロトタイプ（Vue 3 + Vuetify + Vite）。決めたことと、その理由 |
 | [02-requirements-docs.md](02-requirements-docs.md) | 要件定義書を項目別の文書に整えた記録。文書の役割（非機能要件・受け入れ条件・ユースケース）、課題の条件の確認、DB を SQLite から MySQL（RDS）に変えた経緯、技術の選び方 |
+| [03-api-design.md](03-api-design.md) | API 設計の記録。API と REST の考え方、検索・並び替えをサーバー側で行う理由、エラーの番号、ユースケースを読んで設計の見落としに気づいた経緯 |
 
 ## 今後、追加する予定
-API（FastAPI + MySQL）、画面（本番）、品質チェック、AWS へのデプロイ。
+バックエンドの実装（FastAPI + MySQL）、画面（本番）、品質チェック、AWS へのデプロイ。
 
 ## 会話の記録について
 Claude Codeとの会話は、PCの中に保存されています。
