@@ -3,7 +3,7 @@
 画面（Vue）が、バックエンド（FastAPI）に頼むときの「窓口」を決める。要件は [requirements.md](requirements.md)、保存するデータは [データ設計](data-model.md)、操作の流れは [ユースケース](use-cases.md) を参照。
 決まっていないことが出たら、ユーザーに確認してから、この文書を更新する。
 
-**状態：下書き。「要確認」と書いた所は、Claude Code が補った点で、ユーザーの確認が済んでいない。**
+**状態：確定（2026-11-05）。すべての窓口を、ユーザーが確認した。**
 
 ## 1. 全体の決まり（ユーザーと決めた）
 | 決めごと | 内容 |
@@ -27,22 +27,22 @@
 | 窓口 | 内容 | 状態 |
 |---|---|---|
 | `GET /api/requests` | 依頼の一覧（検索・絞り込み・並び替え） | 決定 |
-| `GET /api/requests/{id}` | 依頼1件（詳細モーダル用。チェックリストの中身つき） | 要確認 |
+| `GET /api/requests/{id}` | 依頼1件（詳細モーダル用。チェックリストの中身つき） | 決定 |
 | `POST /api/requests` | 依頼の追加 | 決定 |
 | `PATCH /api/requests/{id}` | 依頼の更新（ステータス変更、アーカイブ、詳細モーダルの保存） | 決定 |
 | `DELETE /api/requests/{id}` | 依頼の完全な削除（アーカイブ中だけ） | 決定 |
 | `PUT /api/requests/order` | 手動の並びの保存 | 決定 |
-| `GET /api/summary` | 画面上部の件数 | 要確認 |
+| `GET /api/summary` | 画面上部の件数 | 決定 |
 | `GET /api/confirm-targets` | 確認先の候補 | 決定 |
-| `GET /api/requesters` | 依頼者の一覧 | 要確認 |
+| `GET /api/requesters` | 依頼者の一覧 | 決定 |
 | `POST /api/requesters` | 依頼者の追加 | 決定 |
 | `PATCH /api/requesters/{id}` | 依頼者の名前・内線番号の変更 | 決定 |
-| `GET /api/categories` | カテゴリーの一覧 | 要確認 |
-| `POST /api/categories` | カテゴリーの追加 | 要確認 |
-| `PATCH /api/categories/{id}` | カテゴリーの名前の変更 | 要確認 |
-| `DELETE /api/categories/{id}` | カテゴリーの削除（使っていないものだけ） | 要確認 |
-| `GET /api/categories/{id}/template-items` | カテゴリーのテンプレート項目の一覧 | 要確認 |
-| `PUT /api/categories/{id}/template-items` | テンプレート項目を、送った一覧に入れ替える | 要確認 |
+| `GET /api/categories` | カテゴリーの一覧 | 決定 |
+| `POST /api/categories` | カテゴリーの追加 | 決定 |
+| `PATCH /api/categories/{id}` | カテゴリーの名前の変更 | 決定 |
+| `DELETE /api/categories/{id}` | カテゴリーの削除（使っていないものだけ） | 決定 |
+| `GET /api/categories/{id}/template-items` | カテゴリーのテンプレート項目の一覧 | 決定 |
+| `PUT /api/categories/{id}/template-items` | テンプレート項目を、送った一覧に入れ替える | 決定 |
 
 チェック項目だけの窓口と、「テンプレートを入れる」専用の窓口は作らない。「テンプレートを入れる」は、画面が `GET .../template-items` で項目を取り、チェックリストに足す（同じ名前は重ねない判断は、画面側）。
 
@@ -81,7 +81,7 @@
 - `checklist_total` が 0 のとき、画面は進み具合を出さない
 - 詳細、受付日、内線番号、チェックリストの中身は、一覧には入れない（詳細で返す）
 
-### 3.2 1件：`GET /api/requests/{id}`（要確認）
+### 3.2 1件：`GET /api/requests/{id}`
 一覧の項目に加えて、`description`、`received_on`、`requester.extension`（内線番号）、`checklist_items`（`[{"name": "...", "done": false}]`、順番どおり）を返す。見つからなければ 404。
 
 ### 3.3 追加：`POST /api/requests`
@@ -118,10 +118,10 @@
 ```
 - 送った順に、手動の並びを振り直す
 - `ids` は、**アーカイブ中を除く全依頼の番号**を、並べたもの。アーカイブ中の依頼の並びは変わらない
-- 過不足があるとき（別の画面で依頼が増減したなど）は 409（`{"detail": "一覧が古くなっています。開き直してください"}`）（要確認）
+- 過不足があるとき（別の画面で依頼が増減したなど）は 409（`{"detail": "一覧が古くなっています。開き直してください"}`）
 - 成功すると 204
 
-## 4. 件数：`GET /api/summary`（要確認）
+## 4. 件数：`GET /api/summary`
 ```json
 {
   "status_counts": {"未着手": 3, "作業中": 5, "確認待ち": 2, "完了": 8, "ペンディング": 1},
@@ -144,14 +144,14 @@
 ## 6. 依頼者（requesters）
 | 窓口 | 内容 |
 |---|---|
-| `GET /api/requesters` | `[{"id": 2, "name": "...", "extension": "1234"}]`。名前順（要確認） |
+| `GET /api/requesters` | `[{"id": 2, "name": "...", "extension": "1234"}]`。名前順 |
 | `POST /api/requesters` | `{"name": "...", "extension": "..."}`（`extension` は省略できる）。201 で、作った依頼者を返す |
 | `PATCH /api/requesters/{id}` | 名前や内線番号を、送った項目だけ変える。直した内線番号は、その人の他の依頼にも反映される |
 
 - 同じ名前は登録できない（409）。削除の窓口は作らない（依頼が使っているため）
 - `extension` は、先頭の 0 を守るため、**文字**で送る
 
-## 7. 業務カテゴリー（categories）とテンプレート（要確認）
+## 7. 業務カテゴリー（categories）とテンプレート
 | 窓口 | 内容 |
 |---|---|
 | `GET /api/categories` | `[{"id": 4, "name": "通関", "request_count": 7}]`（`request_count` は、そのカテゴリーを使っている依頼の数。削除できるかの目安に使う） |
