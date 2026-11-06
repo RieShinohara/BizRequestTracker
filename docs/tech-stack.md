@@ -38,7 +38,7 @@
 | 部分 | 技術 | 備考 |
 |---|---|---|
 | バックエンド | Python ＋ FastAPI | |
-| データベース | MySQL | AWS では RDS に置く（公開しない。入口は EC2 からだけ）。PC での開発用の MySQL は、Docker で起動する案（最終確認は、骨組みを作るとき） |
+| データベース | MySQL | AWS では RDS に置く（公開しない。入口は EC2 からだけ）。PC での開発用の MySQL は、Docker で起動する |
 | DB の扱い方 | SQLAlchemy ＋ Alembic | Python で最も使われている組み合わせ。テーブルの変更の履歴が残る |
 | サーバー側のパッケージ管理 | uv | Python 本体の導入と、部品・仮想環境の管理を、1つの道具で行う |
 | サーバー側のテスト・静的チェック | pytest、ruff | |
@@ -51,12 +51,12 @@
 
 ## 4. バージョン
 - 画面のプロトタイプ（`prototype/`）で使っているもの：Vue 3.5.44、Vuetify 4.3.2、Vite 8.3.5、TypeScript 6.0.3
-- Python と FastAPI など、バックエンドのバージョン：導入するときに、その時点の最新の安定版を調べて、ユーザーと相談して決める（Python は、この PC にまだ入っていない）
+- バックエンド（2026-11-06 に決定。`backend/uv.lock` で固定）：Python 3.13、FastAPI 0.162、uvicorn 0.54、PyMySQL 1.2、pytest 9.2、ruff 0.17、uv 0.13
+- MySQL：**8.4**（LTS。Docker イメージ `mysql:8.4`、導入時は 8.4.13）。AWS の RDS for MySQL も 8.4 に対応している。PC での開発用は Docker で起動する（`docker-compose.yml`）
+- MySQL につなぐ Python の部品（ドライバ）：**PyMySQL**（Python だけで書かれていて、Windows でも追加の準備が要らない）
+- ポート番号：API は 8000、MySQL は 3306、画面（Vite）は 5173（いずれも標準の番号）
 - 本番の画面（`frontend/`）のバージョン：画面の環境を作るときに決める
 
 ## 5. 未決定の項目
-- Python のバージョン（導入するときに決める）
-- MySQL のバージョン、MySQL につなぐ Python の部品（ドライバ）、PC での開発用 MySQL の起動方法（Docker の案）（骨組みを作るときに決める）
 - 日本の祝日を判定するライブラリ（営業日の計算に使う。API を作るときに決める）
-- バックエンドと画面の、ポート番号（骨組みを作るときに決める）
 - 自動チェック（CI）で実行する内容（骨組みができてから決める）

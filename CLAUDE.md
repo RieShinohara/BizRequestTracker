@@ -10,7 +10,7 @@
 - 技術：バックエンドは Python + FastAPI（SQLAlchemy + Alembic、uv）、DBは MySQL、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など。画面のビルドツールは Vite（スクールのメンターに使ってよいと確認済み）。詳しい決定と1本目との比較は [docs/tech-stack.md](docs/tech-stack.md)
 - **課題の条件：TaskManagement から、言語とフレームワークと DB を変える**（メンターに確認済み：Java・Spring Boot と React を変えればよい。DB は PostgreSQL 以外）。TypeScript、Vite は同じでよい。Git・GitHub・GitHub Actions・Terraform・AWS は、作業用の道具なので同じでよい。技術を選ぶときは、[docs/tech-stack.md](docs/tech-stack.md) の比較表で確認する
 - デプロイ先：AWS（EC2 ＋ RDS。**Terraform の構成は、1本目と同じ**）。DB は RDS が対応するものから選ぶ（SQLite は RDS 非対応のため使わない）。デプロイ中に画面録画をして、終わったら `destroy` する
-- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）は完了（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件・ユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）、画面のプロトタイプ（`prototype/`）、API 設計（[docs/api-design.md](docs/api-design.md)）は完了。次は、バックエンドの骨組み（Python・uv・FastAPI・MySQL(Docker)・pytest・ruff）
+- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）は完了（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件・ユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）、画面のプロトタイプ（`prototype/`）、API 設計（[docs/api-design.md](docs/api-design.md)）は完了。バックエンドの骨組み（`backend/`：Python 3.13・uv・FastAPI・pytest・ruff、MySQL 8.4 は Docker）を作成。次は、DB 接続とテーブル作成（SQLAlchemy・Alembic）
 - 構成（予定）：`docs/`（要件定義）、`backend/`、`frontend/`、`terraform/`、`prototype/`（使い捨ての試作）、`notes/`（学習ノート）
 
 ## 2. ユーザーへの接し方
@@ -91,10 +91,25 @@
 - **画面録画・スクリーンショットに、IP アドレスやアカウント ID が映らないようにする**（README に載せる前に確認する）
 
 ## 5. 開発のコマンド
-アプリの骨組みを作ったら、ここに表を書く（起動、テスト、静的チェック、ビルド、整形）。
-予定のツール：バックエンドは uv・pytest・ruff、画面は Vitest・ESLint・Prettier・`npm run build`。
+### バックエンド（`backend/` で実行）
+| 目的 | コマンド |
+|---|---|
+| 部品を入れる | `uv sync` |
+| API を起動 | `uv run uvicorn app.main:app --port 8000` |
+| テスト | `uv run pytest` |
+| 静的チェック | `uv run ruff check .` |
+| 整形の確認 / 整形 | `uv run ruff format --check .` / `uv run ruff format .` |
 
-- **ポートは固定**にする（決まったら、ここに書く）。サーバーを起動する前に、使用中でないか確認し、別のポートでは起動しない。無関係なプロセスは、ユーザーの確認なしに止めない
+### MySQL（Docker。リポジトリ直下で実行）
+| 目的 | コマンド |
+|---|---|
+| 初回の準備 | `.env.example` を `.env` にコピーし、パスワードを自分で決める |
+| 起動 | `docker compose up -d db` |
+| 停止 | `docker compose stop db`（データは残る。`down -v` はデータも消えるので、確認してから） |
+
+画面は Vitest・ESLint・Prettier・`npm run build` を使う予定（画面の骨組みを作ったら、ここに表を足す）。
+
+- **ポートは固定**：API は **8000**、MySQL は **3306**、画面（Vite）は **5173**。サーバーを起動する前に、使用中でないか確認し、別のポートでは起動しない。無関係なプロセスは、ユーザーの確認なしに止めない
 - Windows の PowerShell では、`npm` は `npm.cmd` で実行する
 
 ### Terraform（AWS）の約束
