@@ -1,0 +1,29 @@
+[project]
+name = "biz-request-tracker-backend"
+version = "0.1.0"
+description = "社内業務依頼管理アプリ（BizRequestTracker）のバックエンド"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=50.0.2",
+    "fastapi>=0.162.0",
+    "pymysql>=1.2.3",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

@@ -1,0 +1,35 @@
+# 秘密・環境ごとの設定（見本は .env.example）
+.env
+.env.*
+!.env.example
+
+# Claude Code（.claude/skills/ だけはコミットする）
+.claude/*
+!.claude/skills/
+
+# データベースの中身・書き出し
+*.sql
+*.dump
+mysql-data/
+
+# Terraform
+terraform.tfvars
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# OS・エディタ
+.DS_Store
+Thumbs.db
