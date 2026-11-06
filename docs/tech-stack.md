@@ -51,7 +51,7 @@
 
 ## 4. バージョン
 - 画面のプロトタイプ（`prototype/`）で使っているもの：Vue 3.5.44、Vuetify 4.3.2、Vite 8.3.5、TypeScript 6.0.3
-- バックエンド（2026-11-06 に決定。`backend/uv.lock` で固定）：Python 3.13、FastAPI 0.162、uvicorn 0.54、PyMySQL 1.2、pytest 9.2、ruff 0.17、uv 0.13
+- バックエンド（2026-11-06 に決定。`backend/uv.lock` で固定）：Python 3.13、FastAPI 0.162、uvicorn 0.54、PyMySQL 1.2、SQLAlchemy 2.1、Alembic 1.20、pytest 9.2、ruff 0.17、uv 0.13
 - MySQL：**8.4**（LTS。Docker イメージ `mysql:8.4`、導入時は 8.4.13）。AWS の RDS for MySQL も 8.4 に対応している。PC での開発用は Docker で起動する（`docker-compose.yml`）
 - MySQL につなぐ Python の部品（ドライバ）：**PyMySQL**（Python だけで書かれていて、Windows でも追加の準備が要らない）
 - ポート番号：API は 8000、MySQL は 3306、画面（Vite）は 5173（いずれも標準の番号）

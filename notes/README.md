@@ -11,6 +11,7 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [04-rest-cheatsheet.md](04-rest-cheatsheet.md) | REST API の早見表（確認テストの復習用）。操作とメソッド、URL の決まり、ステータスコード、JSON。このアプリの例つき |
 | [05-architecture.md](05-architecture.md) | 画面とバックエンドの構成。「構成が別々」と「担当が別々」の違い、分けた構成と一体型（Next.js）の比較、Vue・React・Next.js の位置づけ |
 | [06-backend-skeleton.md](06-backend-skeleton.md) | バックエンドの骨組みの記録。uv・FastAPI・Docker の MySQL・pytest・ruff。つまずいたことと、その直し方 |
+| [07-db-models-migration.md](07-db-models-migration.md) | DB 接続とテーブル作成の記録。SQLAlchemy のモデル、Alembic のマイグレーション、削除時の動き、テスト専用 DB |
 
 ## 今後、追加する予定
 バックエンドの実装（DB 接続・テーブル・API）、画面（本番）、品質チェック、AWS へのデプロイ。
