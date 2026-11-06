@@ -11,6 +11,7 @@ docker compose up -d db
 # 2. API（backend/ で）
 cd backend
 uv sync
+uv run alembic upgrade head   # 表を作る（初回と、マイグレーションが増えたとき）
 uv run uvicorn app.main:app --port 8000
 # 確認： http://127.0.0.1:8000/health  →  {"status":"ok"}
 
