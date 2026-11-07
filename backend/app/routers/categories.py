@@ -4,8 +4,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.deps import get_db
-from app.models import Category, Request
-from app.schemas import CategoryCreate, CategoryOut, CategoryUpdate
+from app.models import Category, Request, TemplateItem
+from app.schemas import (
+    CategoryCreate,
+    CategoryOut,
+    CategoryUpdate,
+    TemplateItemIO,
+    TemplateItemsReplace,
+)
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
 
@@ -42,6 +48,26 @@ def list_categories(db: Session = Depends(get_db)):
         .order_by(Category.id)
     )
     return [CategoryOut(id=r.id, name=r.name, request_count=r.request_count) for r in rows]
+
+
+@router.get("/{category_id}/template-items", response_model=list[TemplateItemIO])
+def list_template_items(category_id: int, db: Session = Depends(get_db)):
+    category = _get_or_404(db, category_id)
+    return category.template_items  # テンプレートの順番（sort_order 順）
+
+
+@router.put("/{category_id}/template-items", response_model=list[TemplateItemIO])
+def replace_template_items(
+    category_id: int, body: TemplateItemsReplace, db: Session = Depends(get_db)
+):
+    """送られた一覧を、そのままテンプレートにする（追加・編集・削除を、一度に反映）。"""
+    category = _get_or_404(db, category_id)
+    category.template_items = [
+        TemplateItem(name=item.name, sort_order=position)
+        for position, item in enumerate(body.items, start=1)
+    ]
+    db.commit()
+    return category.template_items
 
 
 @router.post("", response_model=CategoryOut, status_code=status.HTTP_201_CREATED)

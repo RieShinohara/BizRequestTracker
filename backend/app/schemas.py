@@ -51,6 +51,19 @@ class CategoryUpdate(BaseModel):
     name: Name
 
 
+ItemName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+
+
+class TemplateItemIO(BaseModel):
+    """テンプレート項目。順番は、並び方（先頭から）で表す。"""
+
+    name: ItemName
+
+
+class TemplateItemsReplace(BaseModel):
+    items: list[TemplateItemIO]
+
+
 class CategoryOut(BaseModel):
     id: int
     name: str
