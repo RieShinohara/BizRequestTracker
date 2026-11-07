@@ -81,12 +81,23 @@ async function changeStatus(change: StatusChange) {
   await reload()
 }
 
-// 詳細モーダルで開いている依頼の番号（閉じているときは null）
+// 詳細モーダルの状態：開いている依頼の番号（閉じているときは null）、新しい依頼を作っているか
 const openRequestId = ref<number | null>(null)
+const creating = ref(false)
 
-// 保存できたら、モーダルを閉じて、一覧と件数を取り直す（内線番号など、他の依頼の表示も変わるため）
-async function onSaved() {
+function closeDialog() {
   openRequestId.value = null
+  creating.value = false
+}
+
+// 保存できたら、モーダルを閉じて、一覧と件数を取り直す（内線番号など、他の依頼の表示も変わるため）。
+// 新しい依頼のときは、検索・絞り込み・並び替えを外す（手動の並びの一番上に入るので、見えるようにする）
+async function onSaved() {
+  const wasNew = creating.value
+  closeDialog()
+  if (wasNew) {
+    query.value = { ...query.value, q: '', qms: false, categoryId: null, status: null, sort: null }
+  }
   await reload()
 }
 
@@ -112,6 +123,16 @@ onUnmounted(() => clearTimeout(searchTimer))
           <v-card-text>
             <RequestFilters v-model="query" :categories="categories" />
             <div class="d-flex align-center mt-2">
+              <v-btn
+                color="primary"
+                variant="flat"
+                prepend-icon="mdi-plus"
+                class="mr-4"
+                data-testid="new-request"
+                @click="creating = true"
+              >
+                新しい依頼
+              </v-btn>
               <v-switch
                 :model-value="query.includeArchived"
                 label="アーカイブも表示"
@@ -151,8 +172,9 @@ onUnmounted(() => clearTimeout(searchTimer))
     </v-main>
     <RequestDialog
       :request-id="openRequestId"
+      :is-new="creating"
       :categories="categories"
-      @close="openRequestId = null"
+      @close="closeDialog"
       @saved="onSaved"
     />
     <v-snackbar v-model="noticeOpen" color="error" :timeout="5000" data-testid="notice">

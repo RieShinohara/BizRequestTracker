@@ -114,6 +114,14 @@ async function sendJson<T>(method: 'POST' | 'PATCH', url: string, body: unknown)
   return (await response.json()) as T
 }
 
+/**
+ * 依頼の追加（POST /api/requests）。必須は、title・requester_id・category_id・due_on。
+ * 新しい依頼は、手動の並びのいちばん上に入る。失敗したら、例外を投げる。
+ */
+export function createRequest(body: RequestPatch): Promise<RequestDetail> {
+  return sendJson<RequestDetail>('POST', '/api/requests', body)
+}
+
 /** 依頼者の登録（POST /api/requesters）。同じ名前がすでにあると、失敗する（409）。 */
 export function createRequester(name: string, extension: string): Promise<Requester> {
   return sendJson<Requester>('POST', '/api/requesters', { name, extension })
