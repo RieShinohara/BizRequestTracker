@@ -2,7 +2,7 @@
 import { PRIORITY_COLOR, STATUS_COLOR, formatDate, progressText } from '../display'
 import type { RequestRow } from '../types'
 
-defineProps<{ rows: RequestRow[] }>()
+defineProps<{ rows: RequestRow[]; filtered: boolean }>()
 </script>
 
 <template>
@@ -56,7 +56,9 @@ defineProps<{ rows: RequestRow[] }>()
         <td><v-icon v-if="row.qms" icon="mdi-check-circle" color="primary" /></td>
       </tr>
       <tr v-if="rows.length === 0">
-        <td colspan="8" class="text-center text-medium-emphasis pa-6">依頼がありません</td>
+        <td colspan="8" class="text-center text-medium-emphasis pa-6">
+          {{ filtered ? '条件に合う依頼がありません' : '依頼がありません' }}
+        </td>
       </tr>
     </tbody>
   </v-table>

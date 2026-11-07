@@ -1,5 +1,5 @@
 /** 表示のための決まり（色、日付の整形、進み具合の文字）。色は、ここの1か所にまとめる。 */
-import type { Priority, RequestRow, Status } from './types'
+import type { Priority, RequestQuery, RequestRow, SortKey, Status } from './types'
 
 export const STATUS_COLOR: Record<Status, string> = {
   未着手: 'grey',
@@ -14,6 +14,21 @@ export const PRIORITY_COLOR: Record<Priority, string> = {
   高: 'orange',
   中: 'blue',
   低: 'grey',
+}
+
+/** 並び替えの選択肢（先頭が、最初に開いたときの手動の並び） */
+export const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: null, label: '手動の並び' },
+  { value: 'priority', label: '優先度' },
+  { value: 'due_on', label: '期限日' },
+  { value: 'status', label: 'ステータス' },
+]
+
+/** 検索・絞り込みの条件が1つでも入っているか（並び替えと「アーカイブも表示」は、含めない） */
+export function hasActiveFilter(
+  query: Pick<RequestQuery, 'q' | 'qms' | 'categoryId' | 'status'>,
+): boolean {
+  return query.q.trim() !== '' || query.qms || query.categoryId !== null || query.status !== null
 }
 
 /** 例：2026-11-10 → 11/10（火）。曜日は、日付だけで決まる（タイムゾーンの影響を受けない） */
