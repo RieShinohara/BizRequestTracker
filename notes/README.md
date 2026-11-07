@@ -20,9 +20,10 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [13-requests-list-order-api.md](13-requests-list-order-api.md) | 依頼の一覧と並びの保存の API の記録。検索・絞り込み・並び替え、決まった順番に並べる、`%` のエスケープ、N+1 問題 |
 | [14-frontend-skeleton.md](14-frontend-skeleton.md) | 画面の骨組みの記録。開発用サーバーの中継（CORS を避ける）、`localhost` と `127.0.0.1`、API を呼ぶ部品を1か所に集める、Vitest・ESLint・Prettier の役割 |
 | [15-development-approach.md](15-development-approach.md) | 進め方の比較。機能ごとに API と画面を作る方式（1本目）と、API を先に全部作る方式（2本目）の長所・短所・向く場面。今回の判断の理由 |
+| [16-frontend-request-list.md](16-frontend-request-list.md) | 画面の一覧と件数の表示の記録。期限の色は API が決める、2つの API の同時呼び出し、失敗は例外で伝える、日付の曜日と UTC |
 
 ## 今後、追加する予定
-画面の続き（一覧・検索・詳細モーダル・ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
+画面の続き（検索・並び替え・詳細モーダル・ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
 
 ## 会話の記録について
 Claude Codeとの会話は、PCの中に保存されています。
