@@ -5,6 +5,7 @@ import {
   fetchCategories,
   fetchConfirmTargets,
   createRequest,
+  deleteRequest,
   fetchRequest,
   fetchTemplateItems,
   fetchRequesters,
@@ -251,5 +252,41 @@ describe('fetchTemplateItems', () => {
   it('API がエラーを返したら、例外を投げる', async () => {
     mockFetch(async () => ({ ok: false, status: 404, json: async () => ({}) }))
     await expect(fetchTemplateItems(4)).rejects.toThrow('404')
+  })
+})
+
+describe('deleteRequest / archived', () => {
+  it('DELETE で、依頼の番号を呼ぶ', async () => {
+    mockFetch(async () => ({ ok: true, status: 204 }))
+    await deleteRequest(9)
+    expect(fetch).toHaveBeenCalledWith('/api/requests/9', { method: 'DELETE' })
+  })
+
+  it('アーカイブ中でない依頼の削除（409）は、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 409, json: async () => ({}) }))
+    await expect(deleteRequest(9)).rejects.toThrow('409')
+  })
+
+  it('API につながらなかったら、例外を投げる', async () => {
+    mockFetch(async () => {
+      throw new TypeError('Failed to fetch')
+    })
+    await expect(deleteRequest(9)).rejects.toThrow()
+  })
+
+  it('アーカイブ・元に戻すは、archived だけを PATCH で送る', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => ({}) }))
+    await updateRequest(9, { archived: true })
+    expect(fetch).toHaveBeenCalledWith('/api/requests/9', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"archived":true}',
+    })
+    await updateRequest(9, { archived: false })
+    expect(fetch).toHaveBeenLastCalledWith('/api/requests/9', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"archived":false}',
+    })
   })
 })

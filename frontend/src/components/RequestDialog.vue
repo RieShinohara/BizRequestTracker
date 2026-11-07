@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import {
   createRequest,
+  deleteRequest,
   fetchConfirmTargets,
   fetchRequest,
   fetchRequesters,
@@ -37,6 +38,9 @@ const errorMessage = ref('')
 const newItemName = ref('')
 const checklistMessage = ref('')
 const templateLoading = ref(false)
+// 完全な削除の確認を出しているか、アーカイブ・削除の通信中か
+const confirmingDelete = ref(false)
+const working = ref(false)
 const requesterNames = computed(() => requesters.value.map((requester) => requester.name))
 const categoryItems = computed(() =>
   props.categories.map((category) => ({ title: category.name, value: category.id })),
@@ -54,6 +58,7 @@ watch(
     form.value = null
     errorMessage.value = ''
     newItemName.value = ''
+    confirmingDelete.value = false
     checklistMessage.value = ''
     if (id === null && !isNew) {
       loading.value = false
@@ -137,6 +142,43 @@ async function applyTemplate() {
     if (form.value === current) checklistMessage.value = 'テンプレートを読み込めませんでした。'
   } finally {
     templateLoading.value = false
+  }
+}
+
+// アーカイブ・元に戻す・完全な削除。押した時点の依頼（requestId）に対して、その場で行う。
+// アーカイブと元に戻すは、archived だけを送る（画面で直している途中の内容は、保存しない）
+
+async function setArchived(archived: boolean) {
+  const id = props.requestId
+  if (id === null) return
+  working.value = true
+  errorMessage.value = ''
+  try {
+    await updateRequest(id, { archived })
+    emit('saved')
+  } catch {
+    errorMessage.value = archived
+      ? 'アーカイブできませんでした。もう一度お試しください。'
+      : '元に戻せませんでした。もう一度お試しください。'
+  } finally {
+    working.value = false
+  }
+}
+
+async function doDelete() {
+  const id = props.requestId
+  if (id === null) return
+  working.value = true
+  errorMessage.value = ''
+  try {
+    await deleteRequest(id)
+    confirmingDelete.value = false
+    emit('saved')
+  } catch {
+    confirmingDelete.value = false
+    errorMessage.value = '削除できませんでした。アーカイブ中の依頼だけ、削除できます。'
+  } finally {
+    working.value = false
   }
 }
 
@@ -356,6 +398,38 @@ async function save() {
 
         <v-divider />
         <v-card-actions>
+          <!-- 下の段（左）：アーカイブ・元に戻す・完全に削除。新しい依頼には、出さない -->
+          <template v-if="detail">
+            <v-btn
+              v-if="!detail.archived"
+              prepend-icon="mdi-archive-outline"
+              :disabled="working || saving"
+              data-testid="archive"
+              @click="setArchived(true)"
+            >
+              アーカイブ
+            </v-btn>
+            <template v-else>
+              <v-chip size="small" label class="mr-1">アーカイブ中</v-chip>
+              <v-btn
+                prepend-icon="mdi-archive-arrow-up-outline"
+                :disabled="working || saving"
+                data-testid="unarchive"
+                @click="setArchived(false)"
+              >
+                元に戻す
+              </v-btn>
+              <v-btn
+                color="error"
+                prepend-icon="mdi-delete-outline"
+                :disabled="working || saving"
+                data-testid="delete"
+                @click="confirmingDelete = true"
+              >
+                完全に削除
+              </v-btn>
+            </template>
+          </template>
           <v-spacer />
           <v-btn @click="emit('close')">閉じる</v-btn>
           <v-btn color="primary" variant="flat" :loading="saving" data-testid="save" @click="save">
@@ -366,6 +440,29 @@ async function save() {
       <v-card-actions v-else-if="!loading">
         <v-spacer />
         <v-btn @click="emit('close')">閉じる</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- 完全な削除の確認 -->
+  <v-dialog v-model="confirmingDelete" max-width="420">
+    <v-card title="完全に削除しますか？">
+      <v-card-text>
+        「{{ detail?.title }}」を完全に削除します。チェックリストも一緒に消えます。
+        <strong>元に戻せません。</strong>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn data-testid="delete-cancel" @click="confirmingDelete = false">やめる</v-btn>
+        <v-btn
+          color="error"
+          variant="flat"
+          :loading="working"
+          data-testid="delete-confirm"
+          @click="doDelete"
+        >
+          削除する
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

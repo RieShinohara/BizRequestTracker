@@ -57,6 +57,7 @@ export interface RequestPatch {
   priority?: Priority
   confirm_to?: string | null
   qms?: boolean
+  archived?: boolean
   checklist_items?: ChecklistItem[]
 }
 
