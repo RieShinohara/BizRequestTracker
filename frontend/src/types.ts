@@ -57,6 +57,7 @@ export interface RequestPatch {
   priority?: Priority
   confirm_to?: string | null
   qms?: boolean
+  checklist_items?: ChecklistItem[]
 }
 
 /** 依頼者（GET /api/requesters）。内線番号は、先頭の 0 を守るため、文字で扱う */

@@ -59,6 +59,12 @@ export function fetchCategories(): Promise<Category[]> {
   return getJson<Category[]>('/api/categories')
 }
 
+/** カテゴリーのテンプレートの項目名（GET /api/categories/{id}/template-items）。テンプレートの順番どおり */
+export async function fetchTemplateItems(categoryId: number): Promise<string[]> {
+  const items = await getJson<{ name: string }[]>(`/api/categories/${categoryId}/template-items`)
+  return items.map((item) => item.name)
+}
+
 /** 確認先の候補（GET /api/confirm-targets）。過去に入力した確認先も含まれる */
 export function fetchConfirmTargets(): Promise<string[]> {
   return getJson<string[]>('/api/confirm-targets')

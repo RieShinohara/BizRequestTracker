@@ -53,6 +53,7 @@ describe('detailToForm', () => {
       receivedOn: '2026-11-01',
       dueOn: '2026-11-10',
       qms: true,
+      checklist: [],
     })
   })
 
@@ -192,6 +193,7 @@ describe('emptyForm / todayIso', () => {
       receivedOn: '2026-11-07',
       dueOn: '',
       qms: false,
+      checklist: [],
     })
   })
 
@@ -228,5 +230,46 @@ describe('emptyForm / todayIso', () => {
       qms: false,
       received_on: '2026-11-07',
     })
+  })
+})
+
+describe('formToPatch のチェックリスト', () => {
+  const original = [
+    { name: '書類A', done: true },
+    { name: '書類B', done: false },
+  ]
+
+  it('変えていないときは、送らない', () => {
+    const patch = formToPatch(
+      form({ checklist: original.map((item) => ({ ...item })) }),
+      2,
+      original,
+    )
+    expect('checklist_items' in patch).toBe(false)
+  })
+
+  it('チェックや項目を変えたときは、一覧ごと送る', () => {
+    const changed = [
+      { name: '書類A', done: true },
+      { name: '書類B', done: true },
+    ]
+    expect(formToPatch(form({ checklist: changed }), 2, original).checklist_items).toEqual(changed)
+  })
+
+  it('全部消したときは、空の一覧を送る（空にする）', () => {
+    expect(formToPatch(form({ checklist: [] }), 2, original).checklist_items).toEqual([])
+  })
+
+  it('新しい依頼（元は空）で、項目を足したときは、送る。足さないときは、送らない', () => {
+    const added = [{ name: '書類A', done: false }]
+    expect(formToPatch(form({ checklist: added }), 2).checklist_items).toEqual(added)
+    expect('checklist_items' in formToPatch(form({ checklist: [] }), 2)).toBe(false)
+  })
+
+  it('開いたときの値を、画面で直しても、元の値は変わらない', () => {
+    const withChecklist = { ...detail, checklist_items: [{ name: '書類A', done: false }] }
+    const f = detailToForm(withChecklist)
+    f.checklist[0].done = true
+    expect(withChecklist.checklist_items[0].done).toBe(false)
   })
 })
