@@ -146,6 +146,31 @@ class ChecklistItemOut(BaseModel):
     done: bool
 
 
+IdName = CategoryBrief  # 依頼者・カテゴリーの「id と name だけ」の形（どちらも同じ形）
+
+
+class RequestListItem(BaseModel):
+    """一覧の1件。詳細・受付日・内線番号・チェックリストの中身は、入れない（詳細で返す）。"""
+
+    id: int
+    title: str
+    requester: IdName
+    category: IdName
+    status: str
+    priority: str
+    confirm_to: str | None
+    due_on: date
+    qms: bool
+    archived: bool
+    checklist_done: int
+    checklist_total: int
+    due_level: Literal["overdue", "soon"] | None
+
+
+class OrderBody(BaseModel):
+    ids: list[int]
+
+
 class RequestOut(BaseModel):
     id: int
     title: str
