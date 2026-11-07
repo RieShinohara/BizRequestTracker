@@ -22,6 +22,7 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [15-development-approach.md](15-development-approach.md) | 進め方の比較。機能ごとに API と画面を作る方式（1本目）と、API を先に全部作る方式（2本目）の長所・短所・向く場面。今回の判断の理由 |
 | [16-frontend-request-list.md](16-frontend-request-list.md) | 画面の一覧と件数の表示の記録。期限の色は API が決める、2つの API の同時呼び出し、失敗は例外で伝える、日付の曜日と UTC |
 | [17-frontend-search-filter-sort.md](17-frontend-search-filter-sort.md) | 画面の検索・絞り込み・並び替えの記録。URL の作り方（`URLSearchParams`）、デバウンス、古い応答で上書きしない、`defineModel` |
+| [18-frontend-status-change.md](18-frontend-status-change.md) | 画面のステータス変更と確認先の記録。子から親へ `emit` で伝える、PATCH で「送らない」と「null を送る」の違い、成功しても失敗しても取り直す |
 
 ## 今後、追加する予定
 画面の続き（詳細モーダル・ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
