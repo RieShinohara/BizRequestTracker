@@ -7,6 +7,7 @@ import {
   statusChangeToPatch,
   updateRequest,
 } from './api'
+import RequestDialog from './components/RequestDialog.vue'
 import RequestFilters from './components/RequestFilters.vue'
 import RequestTable from './components/RequestTable.vue'
 import SummaryChips from './components/SummaryChips.vue'
@@ -80,6 +81,15 @@ async function changeStatus(change: StatusChange) {
   await reload()
 }
 
+// 詳細モーダルで開いている依頼の番号（閉じているときは null）
+const openRequestId = ref<number | null>(null)
+
+// 保存できたら、モーダルを閉じて、一覧と件数を取り直す（内線番号など、他の依頼の表示も変わるため）
+async function onSaved() {
+  openRequestId.value = null
+  await reload()
+}
+
 // 条件が変わったら、取り直す。検索の文字は、入力が止まってから（打つたびに API を呼ばない）
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 watch(query, (now, before) => {
@@ -134,10 +144,17 @@ onUnmounted(() => clearTimeout(searchTimer))
             :rows="rows"
             :filtered="hasActiveFilter(query)"
             @change-status="changeStatus"
+            @open="openRequestId = $event"
           />
         </v-card>
       </v-container>
     </v-main>
+    <RequestDialog
+      :request-id="openRequestId"
+      :categories="categories"
+      @close="openRequestId = null"
+      @saved="onSaved"
+    />
     <v-snackbar v-model="noticeOpen" color="error" :timeout="5000" data-testid="notice">
       {{ notice }}
     </v-snackbar>

@@ -4,7 +4,11 @@ import {
   checkHealth,
   fetchCategories,
   fetchConfirmTargets,
+  fetchRequest,
+  fetchRequesters,
   fetchRequests,
+  createRequester,
+  updateRequesterExtension,
   fetchSummary,
   statusChangeToPatch,
   updateRequest,
@@ -180,5 +184,36 @@ describe('updateRequest', () => {
       throw new TypeError('Failed to fetch')
     })
     await expect(updateRequest(9, { status: '完了' })).rejects.toThrow()
+  })
+})
+
+describe('fetchRequest / fetchRequesters', () => {
+  it('依頼1件は、/api/requests/{id} を呼ぶ', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => ({ id: 9 }) }))
+    expect(await fetchRequest(9)).toEqual({ id: 9 })
+    expect(fetch).toHaveBeenCalledWith('/api/requests/9')
+  })
+
+  it('見つからない（404）ときは、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 404, json: async () => ({}) }))
+    await expect(fetchRequest(9)).rejects.toThrow('404')
+  })
+
+  it('依頼者の一覧は、/api/requesters を呼ぶ', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => [{ id: 1 }] }))
+    expect(await fetchRequesters()).toEqual([{ id: 1 }])
+    expect(fetch).toHaveBeenCalledWith('/api/requesters')
+  })
+})
+
+describe('createRequester / updateRequesterExtension', () => {
+  it('同じ名前がすでにあるとき（409）は、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 409, json: async () => ({}) }))
+    await expect(createRequester('（架空）山田', '')).rejects.toThrow('409')
+  })
+
+  it('内線番号の変更で、API がエラーを返したら、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 500, json: async () => ({}) }))
+    await expect(updateRequesterExtension(2, '1')).rejects.toThrow('500')
   })
 })

@@ -5,7 +5,7 @@ import { STATUSES, type RequestRow, type Status, type StatusChange } from '../ty
 import ConfirmToDialog from './ConfirmToDialog.vue'
 
 defineProps<{ rows: RequestRow[]; filtered: boolean }>()
-const emit = defineEmits<{ 'change-status': [change: StatusChange] }>()
+const emit = defineEmits<{ 'change-status': [change: StatusChange]; open: [id: number] }>()
 
 // 「確認待ち」を選んだ依頼。確認先を入力してもらう間だけ入る
 const confirming = ref<RequestRow | null>(null)
@@ -42,7 +42,14 @@ function finishConfirm(confirmTo: string) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="row in rows" :key="row.id" :class="{ archived: row.archived }">
+      <tr
+        v-for="row in rows"
+        :key="row.id"
+        :class="{ archived: row.archived }"
+        class="row"
+        data-testid="row"
+        @click="emit('open', row.id)"
+      >
         <!-- ドラッグの取っ手：動くようになるのは、手動の並びの Issue から -->
         <td><v-icon icon="mdi-drag" color="grey-lighten-1" /></td>
         <td>
@@ -61,7 +68,7 @@ function finishConfirm(confirmTo: string) {
         </td>
         <td>{{ row.category.name }}</td>
         <td>{{ row.requester.name }}</td>
-        <td class="status-cell">
+        <td class="status-cell" @click.stop>
           <v-menu>
             <template #activator="{ props: menuProps }">
               <v-chip
@@ -127,6 +134,9 @@ function finishConfirm(confirmTo: string) {
 </template>
 
 <style scoped>
+.row {
+  cursor: pointer;
+}
 .status-cell {
   white-space: nowrap;
 }

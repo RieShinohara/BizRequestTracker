@@ -3,6 +3,8 @@ import type {
   Category,
   RequestPatch,
   RequestQuery,
+  RequestDetail,
+  Requester,
   RequestRow,
   StatusChange,
   Summary,
@@ -87,6 +89,39 @@ export async function updateRequest(id: number, patch: RequestPatch): Promise<vo
   if (!response.ok) {
     throw new Error(`API がエラーを返しました（${response.status}）：PATCH /api/requests/${id}`)
   }
+}
+
+/** 依頼1件（GET /api/requests/{id}）。詳細モーダル用 */
+export function fetchRequest(id: number): Promise<RequestDetail> {
+  return getJson<RequestDetail>(`/api/requests/${id}`)
+}
+
+/** 依頼者の一覧（GET /api/requesters）。名前順 */
+export function fetchRequesters(): Promise<Requester[]> {
+  return getJson<Requester[]>('/api/requesters')
+}
+
+/** 本文つきで送る（POST・PATCH）。失敗したら、例外を投げる。成功したら、返ってきた JSON を返す。 */
+async function sendJson<T>(method: 'POST' | 'PATCH', url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) {
+    throw new Error(`API がエラーを返しました（${response.status}）：${method} ${url}`)
+  }
+  return (await response.json()) as T
+}
+
+/** 依頼者の登録（POST /api/requesters）。同じ名前がすでにあると、失敗する（409）。 */
+export function createRequester(name: string, extension: string): Promise<Requester> {
+  return sendJson<Requester>('POST', '/api/requesters', { name, extension })
+}
+
+/** 依頼者の内線番号の変更（PATCH /api/requesters/{id}）。その人の他の依頼にも反映される。 */
+export async function updateRequesterExtension(id: number, extension: string): Promise<void> {
+  await sendJson<Requester>('PATCH', `/api/requesters/${id}`, { extension })
 }
 
 /** 画面上部の件数（GET /api/summary） */
