@@ -161,4 +161,5 @@ class RequestOut(BaseModel):
     archived: bool
     checklist_done: int
     checklist_total: int
+    due_level: Literal["overdue", "soon"] | None  # 期限の色。None は、色なし
     checklist_items: list[ChecklistItemOut]

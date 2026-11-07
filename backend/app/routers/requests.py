@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.business_days import due_level
 from app.deps import get_db
 from app.models import Category, ChecklistItem, Request, Requester
 from app.schemas import (
@@ -39,6 +40,7 @@ def _to_out(request: Request) -> RequestOut:
         archived=request.archived,
         checklist_done=sum(1 for item in items if item.done),
         checklist_total=len(items),
+        due_level=due_level(request.due_on, request.status, request.archived),
         checklist_items=[ChecklistItemOut(name=i.name, done=i.done) for i in items],
     )
 
