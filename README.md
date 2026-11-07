@@ -14,6 +14,7 @@ uv sync
 uv run alembic upgrade head   # 表を作る（初回と、マイグレーションが増えたとき）
 uv run uvicorn app.main:app --port 8000
 # 確認： http://127.0.0.1:8000/health  →  {"status":"ok"}
+# API の一覧と試し打ち： http://127.0.0.1:8000/docs（FastAPI が自動で作る説明画面）
 
 # テスト・静的チェック
 uv run pytest
