@@ -4,6 +4,7 @@ import {
   checkHealth,
   fetchCategories,
   fetchConfirmTargets,
+  createRequest,
   fetchRequest,
   fetchRequesters,
   fetchRequests,
@@ -215,5 +216,23 @@ describe('createRequester / updateRequesterExtension', () => {
   it('内線番号の変更で、API がエラーを返したら、例外を投げる', async () => {
     mockFetch(async () => ({ ok: false, status: 500, json: async () => ({}) }))
     await expect(updateRequesterExtension(2, '1')).rejects.toThrow('500')
+  })
+})
+
+describe('createRequest', () => {
+  it('POST で、依頼の内容を JSON にして送り、できた依頼を返す', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => ({ id: 12 }) }))
+    const created = await createRequest({ title: '（架空）依頼', category_id: 4 })
+    expect(created).toEqual({ id: 12 })
+    expect(fetch).toHaveBeenCalledWith('/api/requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"title":"（架空）依頼","category_id":4}',
+    })
+  })
+
+  it('API がエラー（422 など）を返したら、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 422, json: async () => ({}) }))
+    await expect(createRequest({ title: '' })).rejects.toThrow('422')
   })
 })

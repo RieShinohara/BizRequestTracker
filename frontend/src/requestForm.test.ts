@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  CATEGORY_MESSAGE,
   REQUIRED_MESSAGE,
+  emptyForm,
   detailToForm,
   formToPatch,
   resolveRequesterId,
+  todayIso,
   validateForm,
   type RequestForm,
 } from './requestForm'
@@ -171,6 +174,59 @@ describe('resolveRequesterId', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: '{"name":"（架空）鈴木","extension":"1111"}',
+    })
+  })
+})
+
+describe('emptyForm / todayIso', () => {
+  it('新しい依頼の初期値：未着手・中・受付日は今日・QMS オフ・カテゴリーは先頭', () => {
+    expect(emptyForm(4, '2026-11-07')).toEqual({
+      title: '',
+      status: '未着手',
+      priority: '中',
+      description: '',
+      requesterName: '',
+      requesterExtension: '',
+      categoryId: 4,
+      confirmTo: '',
+      receivedOn: '2026-11-07',
+      dueOn: '',
+      qms: false,
+    })
+  })
+
+  it('空の入力欄では、必須のメッセージが出る', () => {
+    expect(validateForm(emptyForm(4, '2026-11-07'))).toBe(REQUIRED_MESSAGE)
+  })
+
+  it('カテゴリーが未選択（1つもない）なら、カテゴリーのメッセージが出る', () => {
+    const filled = emptyForm(null, '2026-11-07')
+    filled.title = '（架空）依頼'
+    filled.requesterName = '（架空）山田'
+    filled.dueOn = '2026-11-20'
+    expect(validateForm(filled)).toBe(CATEGORY_MESSAGE)
+  })
+
+  it('今日の日付は、パソコンの日付で決める（月・日は 0 で埋める）', () => {
+    expect(todayIso(new Date(2026, 0, 5, 0, 30))).toBe('2026-01-05')
+    expect(todayIso(new Date(2026, 10, 7, 23, 59))).toBe('2026-11-07')
+  })
+
+  it('必須を入れた新しい依頼は、API に送る形にできる（カテゴリーも送る）', () => {
+    const filled = emptyForm(4, '2026-11-07')
+    filled.title = '（架空）依頼'
+    filled.requesterName = '（架空）山田'
+    filled.dueOn = '2026-11-20'
+    expect(validateForm(filled)).toBeNull()
+    expect(formToPatch(filled, 2)).toMatchObject({
+      title: '（架空）依頼',
+      requester_id: 2,
+      category_id: 4,
+      due_on: '2026-11-20',
+      status: '未着手',
+      priority: '中',
+      qms: false,
+      received_on: '2026-11-07',
     })
   })
 })

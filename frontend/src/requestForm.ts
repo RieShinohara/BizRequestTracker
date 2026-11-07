@@ -3,6 +3,7 @@ import { createRequester, updateRequesterExtension } from './api'
 import type { Priority, RequestDetail, RequestPatch, Requester, Status } from './types'
 
 export const REQUIRED_MESSAGE = 'タイトル、依頼者、期限日は必須です'
+export const CATEGORY_MESSAGE = 'カテゴリーを選んでください'
 
 /** 入力欄の中身。日付は YYYY-MM-DD の文字（<input type="date"> と同じ形） */
 export interface RequestForm {
@@ -12,7 +13,7 @@ export interface RequestForm {
   description: string
   requesterName: string
   requesterExtension: string
-  categoryId: number
+  categoryId: number | null // null＝未選択（カテゴリーが1つもないとき）
   confirmTo: string
   receivedOn: string
   dueOn: string
@@ -36,9 +37,10 @@ export function detailToForm(detail: RequestDetail): RequestForm {
   }
 }
 
-/** 必須の項目（タイトル・依頼者・期限日）が入っているか調べる。問題があれば、メッセージを返す。 */
+/** 必須の項目（タイトル・依頼者・期限日・カテゴリー）が入っているか調べる。問題があれば、メッセージを返す。 */
 export function validateForm(form: RequestForm): string | null {
   if (!form.title.trim() || !form.requesterName.trim() || !form.dueOn) return REQUIRED_MESSAGE
+  if (form.categoryId === null) return CATEGORY_MESSAGE
   return null
 }
 
@@ -52,7 +54,7 @@ export function formToPatch(form: RequestForm, requesterId: number): RequestPatc
     title: form.title.trim(),
     description: form.description.trim() || null,
     requester_id: requesterId,
-    category_id: form.categoryId,
+    category_id: form.categoryId ?? undefined, // 未選択は、送らない（確認で止めている）
     due_on: form.dueOn,
     status: form.status,
     priority: form.priority,
@@ -82,4 +84,27 @@ export async function resolveRequesterId(
     await updateRequesterExtension(found.id, extension)
   }
   return found.id
+}
+
+/** 今日の日付（YYYY-MM-DD）。パソコンの日付（日本時間）で決める。UTC にすると、朝に前の日になるため */
+export function todayIso(now: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+/** 新しい依頼の、空の入力欄。初期値は、ステータス＝未着手、優先度＝中、受付日＝今日、QMS＝オフ、カテゴリー＝先頭。 */
+export function emptyForm(firstCategoryId: number | null, today: string): RequestForm {
+  return {
+    title: '',
+    status: '未着手',
+    priority: '中',
+    description: '',
+    requesterName: '',
+    requesterExtension: '',
+    categoryId: firstCategoryId,
+    confirmTo: '',
+    receivedOn: today,
+    dueOn: '',
+    qms: false,
+  }
 }

@@ -1,17 +1,26 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { fetchConfirmTargets, fetchRequest, fetchRequesters, updateRequest } from '../api'
+import {
+  createRequest,
+  fetchConfirmTargets,
+  fetchRequest,
+  fetchRequesters,
+  updateRequest,
+} from '../api'
 import {
   detailToForm,
+  emptyForm,
   formToPatch,
   resolveRequesterId,
+  todayIso,
   validateForm,
   type RequestForm,
 } from '../requestForm'
 import { PRIORITIES, STATUSES, type Category, type RequestDetail, type Requester } from '../types'
 
-// requestId＝開く依頼の番号（閉じているときは null）
-const props = defineProps<{ requestId: number | null; categories: Category[] }>()
+// requestId＝直す依頼の番号、isNew＝新しい依頼を作る（どちらでもなければ、閉じている）
+const props = defineProps<{ requestId: number | null; isNew: boolean; categories: Category[] }>()
+const isOpen = computed(() => props.isNew || props.requestId !== null)
 const emit = defineEmits<{ close: []; saved: [] }>()
 
 const detail = ref<RequestDetail | null>(null)
@@ -22,36 +31,47 @@ const loading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
 
+// 表示するチェックリスト（新しい依頼は、まだない）
+const checklistItems = computed(() => detail.value?.checklist_items ?? [])
 const requesterNames = computed(() => requesters.value.map((requester) => requester.name))
 const categoryItems = computed(() =>
   props.categories.map((category) => ({ title: category.name, value: category.id })),
 )
 
-// 開くたびに、最新の内容を取り直す（一覧の情報は、古いかもしれないため）
+// 開くたびに、最新の内容を取り直す（一覧の情報は、古いかもしれないため）。
+// 新しい依頼のときは、依頼者の一覧と確認先の候補だけを取って、空の入力欄を出す。
+// 読み込み中に、閉じた（または別の依頼を開いた）ときは、結果を捨てる（番号で見分ける）
+let openCount = 0
 watch(
-  () => props.requestId,
-  async (id) => {
+  () => [props.requestId, props.isNew] as const,
+  async ([id, isNew]) => {
+    const myCount = ++openCount
     detail.value = null
     form.value = null
     errorMessage.value = ''
-    if (id === null) return
+    if (id === null && !isNew) {
+      loading.value = false
+      return
+    }
     loading.value = true
     try {
       const [loaded, requesterList, targets] = await Promise.all([
-        fetchRequest(id),
+        id !== null ? fetchRequest(id) : Promise.resolve(null),
         fetchRequesters(),
         fetchConfirmTargets().catch(() => [] as string[]), // 候補が取れなくても、入力はできる
       ])
-      if (props.requestId !== id) return // 読み込み中に、閉じた（または別の依頼を開いた）
+      if (myCount !== openCount) return
       detail.value = loaded
-      form.value = detailToForm(loaded)
+      form.value = loaded
+        ? detailToForm(loaded)
+        : emptyForm(props.categories[0]?.id ?? null, todayIso())
       requesters.value = requesterList
       confirmTargets.value = targets
     } catch {
-      if (props.requestId !== id) return
+      if (myCount !== openCount) return
       errorMessage.value = '依頼を読み込めませんでした。'
     } finally {
-      if (props.requestId === id) loading.value = false
+      if (myCount === openCount) loading.value = false
     }
   },
   { immediate: true },
@@ -69,7 +89,7 @@ function onRequesterChange(name: string | null) {
 async function save() {
   const current = form.value
   const id = props.requestId
-  if (!current || id === null) return
+  if (!current || (id === null && !props.isNew)) return
   const problem = validateForm(current)
   if (problem) {
     errorMessage.value = problem
@@ -79,10 +99,16 @@ async function save() {
   errorMessage.value = ''
   try {
     const requesterId = await resolveRequesterId(current, requesters.value)
-    await updateRequest(id, formToPatch(current, requesterId))
+    const body = formToPatch(current, requesterId)
+    if (id === null) await createRequest(body)
+    else await updateRequest(id, body)
     emit('saved')
   } catch {
     errorMessage.value = '保存できませんでした。入力を確かめて、もう一度お試しください。'
+    // 新しい依頼者を登録したあとで失敗したとき、やり直すと「同じ名前」で止まらないよう、一覧を取り直す
+    fetchRequesters()
+      .then((list) => (requesters.value = list))
+      .catch(() => {})
   } finally {
     saving.value = false
   }
@@ -91,7 +117,7 @@ async function save() {
 
 <template>
   <v-dialog
-    :model-value="requestId !== null"
+    :model-value="isOpen"
     max-width="1000"
     scrollable
     @update:model-value="(value: boolean) => !value && emit('close')"
@@ -108,7 +134,8 @@ async function save() {
         {{ errorMessage }}
       </v-alert>
 
-      <template v-if="form && detail">
+      <template v-if="form">
+        <v-card-title v-if="isNew" class="pt-4">新しい依頼</v-card-title>
         <!-- 上の段：タイトル・ステータス・優先度 -->
         <v-card-item>
           <v-row dense align="center">
@@ -196,21 +223,14 @@ async function save() {
               <v-checkbox v-model="form.qms" label="QMS チェック" hide-details density="compact" />
             </v-col>
 
-            <!-- 右側：チェックリスト（この段階では表示だけ。編集は、次の Issue） -->
+            <!-- 右側：チェックリスト（この段階では表示だけ。編集は、次の Issue）。新しい依頼は、空 -->
             <v-col cols="12" md="5">
               <div class="text-subtitle-1 font-weight-bold mb-2">チェックリスト</div>
-              <div
-                v-if="detail.checklist_items.length === 0"
-                class="text-medium-emphasis text-body-2"
-              >
-                項目がありません。
+              <div v-if="checklistItems.length === 0" class="text-medium-emphasis text-body-2">
+                {{ isNew ? 'チェックリストは、保存したあとで追加します。' : '項目がありません。' }}
               </div>
               <v-list density="compact" class="checklist pa-0">
-                <v-list-item
-                  v-for="(item, index) in detail.checklist_items"
-                  :key="index"
-                  class="px-0"
-                >
+                <v-list-item v-for="(item, index) in checklistItems" :key="index" class="px-0">
                   <div class="d-flex align-center">
                     <v-icon
                       :icon="item.done ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
