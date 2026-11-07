@@ -26,9 +26,10 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [19-frontend-detail-modal.md](19-frontend-detail-modal.md) | 画面の詳細モーダル（表示と編集）の記録。ロジックを画面から切り離してテストする、依頼者の2段階の保存、確認先は確認待ちのときだけ送る、`@click.stop` |
 | [20-frontend-add-request.md](20-frontend-add-request.md) | 画面の依頼の追加の記録。「直す」と「作る」で同じ部品を使い回す、古い結果を捨てるカウンター、今日の日付と UTC、失敗したときの後始末 |
 | [21-frontend-checklist-edit.md](21-frontend-checklist-edit.md) | 画面のチェックリストの編集の記録。操作の関数は新しい配列を返す、変わったときだけ送る、同じ配列を返して変化の有無を伝える、日本語入力の Enter（`isComposing`） |
+| [22-frontend-archive-delete.md](22-frontend-archive-delete.md) | 画面のアーカイブと完全な削除の記録。「隠す」と「消す」の分け方、確認のダイアログに書くこと、状態でボタンを出し分ける、`immediate` の `watch` と変数の宣言の順番 |
 
 ## 今後、追加する予定
-画面の続き（アーカイブと削除・ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
+画面の続き（ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
 
 ## 会話の記録について
 Claude Codeとの会話は、PCの中に保存されています。
