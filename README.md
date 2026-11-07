@@ -21,6 +21,21 @@ uv run pytest
 uv run ruff check .
 ```
 
+## 動かし方（画面）
+前提：Node.js が入っていること。先に、上の手順で API を起動しておく。
+
+```
+cd frontend
+npm install
+npm run dev     # http://localhost:5173 を開く（ポートは固定）
+npm run test    # テスト
+npm run lint    # 静的チェック
+npm run build   # 型チェックとビルド
+```
+
+開発用サーバーは、画面から呼ぶ `/api` と `/health` を、API（8000番）に中継する。
+`prototype/` は、画面の見た目を確かめた使い捨ての試作（API にはつながない）。
+
 ## 文書
 - [要件定義](docs/requirements.md)
 - [データ設計](docs/data-model.md)

@@ -10,7 +10,7 @@
 - 技術：バックエンドは Python + FastAPI（SQLAlchemy + Alembic、uv）、DBは MySQL、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など。画面のビルドツールは Vite（スクールのメンターに使ってよいと確認済み）。詳しい決定と1本目との比較は [docs/tech-stack.md](docs/tech-stack.md)
 - **課題の条件：TaskManagement から、言語とフレームワークと DB を変える**（メンターに確認済み：Java・Spring Boot と React を変えればよい。DB は PostgreSQL 以外）。TypeScript、Vite は同じでよい。Git・GitHub・GitHub Actions・Terraform・AWS は、作業用の道具なので同じでよい。技術を選ぶときは、[docs/tech-stack.md](docs/tech-stack.md) の比較表で確認する
 - デプロイ先：AWS（EC2 ＋ RDS。**Terraform の構成は、1本目と同じ**）。DB は RDS が対応するものから選ぶ（SQLite は RDS 非対応のため使わない）。デプロイ中に画面録画をして、終わったら `destroy` する
-- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）は完了（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件・ユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）、画面のプロトタイプ（`prototype/`）、API 設計（[docs/api-design.md](docs/api-design.md)）は完了。バックエンドの骨組み（`backend/`：Python 3.13・uv・FastAPI・pytest・ruff、MySQL 8.4 は Docker）を作成。DB 接続とテーブル作成（SQLAlchemy・Alembic）も完了。依頼者・カテゴリー・テンプレート項目の API（9本）、依頼の追加・1件取得・更新・削除（4本）も完了。件数と確認先の候補（`summary`・`confirm-targets`）も完了（17本中15本）。期限の色（営業日の計算、`due_level`。祝日は jpholiday）も完了。依頼の一覧（検索・絞り込み・並び替え）と手動の並びの保存も完了し、**API は全17本が完成**。次は、画面（`frontend/`。Vue 3 + Vuetify。環境づくりから）
+- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）は完了（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件・ユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）、画面のプロトタイプ（`prototype/`）、API 設計（[docs/api-design.md](docs/api-design.md)）は完了。バックエンドの骨組み（`backend/`：Python 3.13・uv・FastAPI・pytest・ruff、MySQL 8.4 は Docker）を作成。DB 接続とテーブル作成（SQLAlchemy・Alembic）も完了。依頼者・カテゴリー・テンプレート項目の API（9本）、依頼の追加・1件取得・更新・削除（4本）も完了。件数と確認先の候補（`summary`・`confirm-targets`）も完了（17本中15本）。期限の色（営業日の計算、`due_level`。祝日は jpholiday）も完了。依頼の一覧（検索・絞り込み・並び替え）と手動の並びの保存も完了し、**API は全17本が完成**。画面の骨組み（`frontend/`：Vue 3・TypeScript・Vuetify・Vite・Vitest・ESLint・Prettier。API につながる確認画面）も作成。次は、一覧の表示（`GET /api/requests`・`/api/summary`）
 - 構成（予定）：`docs/`（要件定義）、`backend/`、`frontend/`、`terraform/`、`prototype/`（使い捨ての試作）、`notes/`（学習ノート）
 
 ## 2. ユーザーへの接し方
@@ -110,7 +110,17 @@
 | 起動 | `docker compose up -d db` |
 | 停止 | `docker compose stop db`（データは残る。`down -v` はデータも消えるので、確認してから） |
 
-画面は Vitest・ESLint・Prettier・`npm run build` を使う予定（画面の骨組みを作ったら、ここに表を足す）。
+### 画面（`frontend/` で実行。PowerShell では `npm.cmd`）
+| 目的 | コマンド |
+|---|---|
+| 部品を入れる | `npm install` |
+| 開発用サーバーを起動（http://localhost:5173。`/api` と `/health` は、API の 8000 番に中継される。先に API を起動する） | `npm run dev` |
+| テスト | `npm run test` |
+| 静的チェック | `npm run lint` |
+| 整形の確認 / 整形 | `npm run format:check` / `npm run format` |
+| ビルド（型チェックを含む） | `npm run build` |
+
+`prototype/` は、使い捨ての試作（参考用）。本番の画面は `frontend/`。
 
 - **ポートは固定**：API は **8000**、MySQL は **3306**、画面（Vite）は **5173**。サーバーを起動する前に、使用中でないか確認し、別のポートでは起動しない。無関係なプロセスは、ユーザーの確認なしに止めない
 - Windows の PowerShell では、`npm` は `npm.cmd` で実行する
