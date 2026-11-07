@@ -57,6 +57,7 @@
 - ポート番号：API は 8000、MySQL は 3306、画面（Vite）は 5173（いずれも標準の番号）
 - 日本の祝日を判定するライブラリ：**jpholiday**（1.0.3。2026-11-07 に決定）。候補の `holidays`（0.108）と、国民の休日・成人の日などの判定を試して、同じ結果だった。日本だけで足りて、使い方が簡単で小さいため、jpholiday を選んだ。会社の休み（12/29〜1/3、8/12〜15）は、`backend/app/settings.py` に書く
 - 本番の画面（`frontend/`。2026-11-07 に作成。`frontend/package-lock.json` で固定）：Vue 3.5.45、Vuetify 4.3.2、Vite 8.3.6、TypeScript 6.0.3、Vitest 5.1.0、ESLint 10.14、Prettier 3.9.10（プロトタイプと同じ系統。部品は同じ）
+- ドラッグ＆ドロップの部品：vue-draggable-plus 0.6.1（2026-11-07 に導入。`frontend/package-lock.json` で固定）。本番に入る部品の `npm audit` は、0件
 - 画面の開発用サーバー：`/api` と `/health` を、API の 8000 番に中継する（`frontend/vite.config.ts`）。画面と API が「同じ入口」に見えるので、ブラウザの制限（CORS）を気にしなくてよい。本番（AWS）での中継の方法は、デプロイのときに決める
 
 ## 5. 未決定の項目
