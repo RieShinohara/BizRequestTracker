@@ -5,8 +5,10 @@ import {
   fetchConfirmTargets,
   fetchRequest,
   fetchRequesters,
+  fetchTemplateItems,
   updateRequest,
 } from '../api'
+import { addItem, mergeTemplate, removeItem, setDone } from '../checklist'
 import {
   detailToForm,
   emptyForm,
@@ -31,8 +33,10 @@ const loading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
 
-// 表示するチェックリスト（新しい依頼は、まだない）
-const checklistItems = computed(() => detail.value?.checklist_items ?? [])
+// チェックリストの操作に使う：項目を足す入力欄、お知らせ（テンプレートがない、など）、テンプレート読み込み中
+const newItemName = ref('')
+const checklistMessage = ref('')
+const templateLoading = ref(false)
 const requesterNames = computed(() => requesters.value.map((requester) => requester.name))
 const categoryItems = computed(() =>
   props.categories.map((category) => ({ title: category.name, value: category.id })),
@@ -49,6 +53,8 @@ watch(
     detail.value = null
     form.value = null
     errorMessage.value = ''
+    newItemName.value = ''
+    checklistMessage.value = ''
     if (id === null && !isNew) {
       loading.value = false
       return
@@ -86,6 +92,54 @@ function onRequesterChange(name: string | null) {
     requesters.value.find((requester) => requester.name === text)?.extension ?? ''
 }
 
+// チェックリストの操作。画面の入力欄（form.checklist）を直すだけで、保存は「保存」を押したときに行う
+function onAddItem() {
+  if (!form.value) return
+  form.value.checklist = addItem(form.value.checklist, newItemName.value)
+  newItemName.value = ''
+  checklistMessage.value = ''
+}
+
+// Enter で足す。ただし、日本語の変換を確定する Enter（isComposing）では、足さない
+function onEnter(event: KeyboardEvent) {
+  if (event.isComposing) return
+  onAddItem()
+}
+
+function onRemoveItem(index: number) {
+  if (form.value) form.value.checklist = removeItem(form.value.checklist, index)
+}
+
+function onToggleItem(index: number, done: boolean | null) {
+  if (form.value) form.value.checklist = setDone(form.value.checklist, index, !!done)
+}
+
+// 「テンプレートを入れる」：選んでいるカテゴリーのテンプレートを、後ろに足す（同じ名前は重ねない）
+async function applyTemplate() {
+  const current = form.value
+  if (!current || current.categoryId === null) return
+  checklistMessage.value = ''
+  templateLoading.value = true
+  try {
+    const names = await fetchTemplateItems(current.categoryId)
+    if (form.value !== current) return // 読み込み中に、閉じた（または別の依頼を開いた）
+    if (names.length === 0) {
+      checklistMessage.value = 'このカテゴリーには、テンプレートがありません。'
+      return
+    }
+    const merged = mergeTemplate(current.checklist, names)
+    if (merged === current.checklist) {
+      checklistMessage.value = 'テンプレートの項目は、すべて入っています。'
+    } else {
+      current.checklist = merged
+    }
+  } catch {
+    if (form.value === current) checklistMessage.value = 'テンプレートを読み込めませんでした。'
+  } finally {
+    templateLoading.value = false
+  }
+}
+
 async function save() {
   const current = form.value
   const id = props.requestId
@@ -99,7 +153,7 @@ async function save() {
   errorMessage.value = ''
   try {
     const requesterId = await resolveRequesterId(current, requesters.value)
-    const body = formToPatch(current, requesterId)
+    const body = formToPatch(current, requesterId, detail.value?.checklist_items ?? [])
     if (id === null) await createRequest(body)
     else await updateRequest(id, body)
     emit('saved')
@@ -223,28 +277,70 @@ async function save() {
               <v-checkbox v-model="form.qms" label="QMS チェック" hide-details density="compact" />
             </v-col>
 
-            <!-- 右側：チェックリスト（この段階では表示だけ。編集は、次の Issue）。新しい依頼は、空 -->
+            <!-- 右側：チェックリスト。「保存」を押したときに、まとめて保存される -->
             <v-col cols="12" md="5">
-              <div class="text-subtitle-1 font-weight-bold mb-2">チェックリスト</div>
-              <div v-if="checklistItems.length === 0" class="text-medium-emphasis text-body-2">
-                {{ isNew ? 'チェックリストは、保存したあとで追加します。' : '項目がありません。' }}
+              <div class="d-flex align-center mb-2">
+                <div class="text-subtitle-1 font-weight-bold">チェックリスト</div>
+                <v-spacer />
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  prepend-icon="mdi-playlist-plus"
+                  :loading="templateLoading"
+                  :disabled="form.categoryId === null"
+                  data-testid="apply-template"
+                  @click="applyTemplate"
+                >
+                  テンプレートを入れる
+                </v-btn>
               </div>
-              <v-list density="compact" class="checklist pa-0">
-                <v-list-item v-for="(item, index) in checklistItems" :key="index" class="px-0">
+              <div v-if="form.checklist.length === 0" class="text-medium-emphasis text-body-2 mb-2">
+                項目がありません。テンプレートを入れるか、下から足してください。
+              </div>
+              <v-list density="compact" class="checklist pa-0" data-testid="checklist">
+                <v-list-item v-for="(item, index) in form.checklist" :key="index" class="px-0">
                   <div class="d-flex align-center">
-                    <v-icon
-                      :icon="item.done ? 'mdi-checkbox-marked' : 'mdi-checkbox-blank-outline'"
-                      :color="item.done ? 'primary' : 'grey'"
-                      class="mr-2"
+                    <v-checkbox
+                      :model-value="item.done"
+                      hide-details
+                      density="compact"
+                      @update:model-value="onToggleItem(index, $event)"
                     />
                     <span
                       :class="{ 'text-decoration-line-through text-medium-emphasis': item.done }"
                     >
                       {{ item.name }}
                     </span>
+                    <v-spacer />
+                    <v-btn
+                      icon="mdi-close"
+                      size="x-small"
+                      variant="text"
+                      color="grey"
+                      aria-label="項目を消す"
+                      @click="onRemoveItem(index)"
+                    />
                   </div>
                 </v-list-item>
               </v-list>
+              <v-text-field
+                v-model="newItemName"
+                label="項目を足す"
+                density="compact"
+                hide-details
+                append-inner-icon="mdi-plus"
+                class="mt-2"
+                data-testid="new-item"
+                @keydown.enter="onEnter"
+                @click:append-inner="onAddItem"
+              />
+              <div
+                v-if="checklistMessage"
+                class="text-caption text-medium-emphasis mt-2"
+                data-testid="checklist-message"
+              >
+                {{ checklistMessage }}
+              </div>
             </v-col>
           </v-row>
           <v-alert

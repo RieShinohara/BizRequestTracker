@@ -6,6 +6,7 @@ import {
   fetchConfirmTargets,
   createRequest,
   fetchRequest,
+  fetchTemplateItems,
   fetchRequesters,
   fetchRequests,
   createRequester,
@@ -234,5 +235,21 @@ describe('createRequest', () => {
   it('API がエラー（422 など）を返したら、例外を投げる', async () => {
     mockFetch(async () => ({ ok: false, status: 422, json: async () => ({}) }))
     await expect(createRequest({ title: '' })).rejects.toThrow('422')
+  })
+})
+
+describe('fetchTemplateItems', () => {
+  it('カテゴリーのテンプレートを呼び、項目名の配列にして返す', async () => {
+    mockFetch(async () => ({
+      ok: true,
+      json: async () => [{ name: '原稿の確認' }, { name: '校正' }],
+    }))
+    expect(await fetchTemplateItems(4)).toEqual(['原稿の確認', '校正'])
+    expect(fetch).toHaveBeenCalledWith('/api/categories/4/template-items')
+  })
+
+  it('API がエラーを返したら、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 404, json: async () => ({}) }))
+    await expect(fetchTemplateItems(4)).rejects.toThrow('404')
   })
 })

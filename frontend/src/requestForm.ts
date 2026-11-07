@@ -1,6 +1,14 @@
 /** 詳細モーダルの入力内容（フォーム）の扱い。画面の部品から切り離して、テストしやすくする。 */
 import { createRequester, updateRequesterExtension } from './api'
-import type { Priority, RequestDetail, RequestPatch, Requester, Status } from './types'
+import { sameChecklist } from './checklist'
+import type {
+  ChecklistItem,
+  Priority,
+  RequestDetail,
+  RequestPatch,
+  Requester,
+  Status,
+} from './types'
 
 export const REQUIRED_MESSAGE = 'タイトル、依頼者、期限日は必須です'
 export const CATEGORY_MESSAGE = 'カテゴリーを選んでください'
@@ -18,6 +26,7 @@ export interface RequestForm {
   receivedOn: string
   dueOn: string
   qms: boolean
+  checklist: ChecklistItem[]
 }
 
 /** API から取った依頼1件を、入力欄の中身にする（null は、空の文字にする）。 */
@@ -34,6 +43,7 @@ export function detailToForm(detail: RequestDetail): RequestForm {
     receivedOn: detail.received_on,
     dueOn: detail.due_on,
     qms: detail.qms,
+    checklist: detail.checklist_items.map((item) => ({ ...item })), // 画面で直しても、元の値を変えない
   }
 }
 
@@ -48,8 +58,13 @@ export function validateForm(form: RequestForm): string | null {
  * 入力内容を、API に送る形（PATCH）にする。
  * - 確認先は、ステータスが「確認待ち」のときだけ送る（それ以外では入力欄が使えず、残っている値を消さない）
  * - 空の詳細は null、受付日が空なら送らない（API は、受付日を空にできない）
+ * - originalChecklist＝開いたときのチェックリスト（新しい依頼は、空）。変わっているときだけ、送る
  */
-export function formToPatch(form: RequestForm, requesterId: number): RequestPatch {
+export function formToPatch(
+  form: RequestForm,
+  requesterId: number,
+  originalChecklist: ChecklistItem[] = [],
+): RequestPatch {
   const patch: RequestPatch = {
     title: form.title.trim(),
     description: form.description.trim() || null,
@@ -62,6 +77,8 @@ export function formToPatch(form: RequestForm, requesterId: number): RequestPatc
   }
   if (form.receivedOn) patch.received_on = form.receivedOn
   if (form.status === '確認待ち') patch.confirm_to = form.confirmTo.trim() || null
+  // チェックリストは、送ると「その一覧に入れ替わる」。変えていないときは送らない（新しい依頼の元は、空）
+  if (!sameChecklist(form.checklist, originalChecklist)) patch.checklist_items = form.checklist
   return patch
 }
 
@@ -106,5 +123,6 @@ export function emptyForm(firstCategoryId: number | null, today: string): Reques
     receivedOn: today,
     dueOn: '',
     qms: false,
+    checklist: [],
   }
 }
