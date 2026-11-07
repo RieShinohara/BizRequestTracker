@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
   fetchCategories,
   fetchRequests,
   fetchSummary,
+  saveOrder,
   statusChangeToPatch,
   updateRequest,
 } from './api'
@@ -12,6 +13,7 @@ import RequestFilters from './components/RequestFilters.vue'
 import RequestTable from './components/RequestTable.vue'
 import SummaryChips from './components/SummaryChips.vue'
 import { hasActiveFilter } from './display'
+import { dragDisabledReason, orderIds } from './order'
 import type { Category, RequestQuery, RequestRow, StatusChange, Summary } from './types'
 
 const rows = ref<RequestRow[]>([])
@@ -79,6 +81,30 @@ async function changeStatus(change: StatusChange) {
     noticeOpen.value = true
   }
   await reload()
+}
+
+// ドラッグで並びを変えたとき。画面には先に反映して、保存する。
+// 保存できてもできなくても、一覧を取り直して、画面を API の実際の並びに合わせる
+// （失敗したときは、元の並びに戻る。別の画面で依頼が増減していた場合の 409 も、同じ）
+const reordering = ref(false)
+const dragReason = computed(() =>
+  reordering.value ? '並びを保存しています…' : dragDisabledReason(query.value),
+)
+
+async function onReorder(moved: RequestRow[]) {
+  reordering.value = true
+  rows.value = moved
+  try {
+    await saveOrder(orderIds(moved))
+  } catch {
+    notice.value = '並びを保存できませんでした。一覧を取り直しました。もう一度お試しください。'
+    noticeOpen.value = true
+  }
+  try {
+    await loadRows()
+  } finally {
+    reordering.value = false
+  }
 }
 
 // 詳細モーダルの状態：開いている依頼の番号（閉じているときは null）、新しい依頼を作っているか
@@ -164,8 +190,10 @@ onUnmounted(() => clearTimeout(searchTimer))
             v-if="!errorMessage"
             :rows="rows"
             :filtered="hasActiveFilter(query)"
+            :drag-disabled-reason="dragReason"
             @change-status="changeStatus"
             @open="openRequestId = $event"
+            @reorder="onReorder"
           />
         </v-card>
       </v-container>

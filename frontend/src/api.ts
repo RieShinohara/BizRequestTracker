@@ -108,6 +108,22 @@ export async function deleteRequest(id: number): Promise<void> {
   }
 }
 
+/**
+ * 手動の並びの保存（PUT /api/requests/order）。送った順に、並びを振り直す。
+ * ids は、アーカイブ中を除く全依頼の番号。過不足があるとき（別の画面で依頼が増減したなど）は
+ * 409 になり、例外を投げる。
+ */
+export async function saveOrder(ids: number[]): Promise<void> {
+  const response = await fetch('/api/requests/order', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids }),
+  })
+  if (!response.ok) {
+    throw new Error(`API がエラーを返しました（${response.status}）：PUT /api/requests/order`)
+  }
+}
+
 /** 依頼1件（GET /api/requests/{id}）。詳細モーダル用 */
 export function fetchRequest(id: number): Promise<RequestDetail> {
   return getJson<RequestDetail>(`/api/requests/${id}`)
