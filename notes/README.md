@@ -17,9 +17,10 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [10-requests-crud-api.md](10-requests-crud-api.md) | 依頼の API（追加・取得・更新・削除）の記録。許される値の確認、PATCH の null、チェックリストの入れ替え、「いちばん上」の作り方、削除の条件 |
 | [11-summary-confirm-targets-api.md](11-summary-confirm-targets-api.md) | 件数と確認先の候補の API の記録。集計を DB に任せる、0件も返す、設定ファイル、過去の入力から候補を作る |
 | [12-due-level.md](12-due-level.md) | 期限の色（営業日の計算）の記録。祝日ライブラリの選び方、会社の休み、日本時間、テストで「今日」を固定する、境目の日のテスト |
+| [13-requests-list-order-api.md](13-requests-list-order-api.md) | 依頼の一覧と並びの保存の API の記録。検索・絞り込み・並び替え、決まった順番に並べる、`%` のエスケープ、N+1 問題 |
 
 ## 今後、追加する予定
-バックエンドの実装（DB 接続・テーブル・API）、画面（本番）、品質チェック、AWS へのデプロイ。
+画面（本番）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
 
 ## 会話の記録について
 Claude Codeとの会話は、PCの中に保存されています。
