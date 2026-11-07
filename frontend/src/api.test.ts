@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { checkHealth, fetchRequests, fetchSummary } from './api'
+import { buildRequestsUrl, checkHealth, fetchCategories, fetchRequests, fetchSummary } from './api'
 
 function mockFetch(implementation: () => Promise<unknown>) {
   vi.stubGlobal('fetch', vi.fn(implementation))
@@ -71,5 +71,49 @@ describe('fetchSummary', () => {
   it('API がエラーの番号を返したら、例外を投げる', async () => {
     mockFetch(async () => ({ ok: false, status: 503, json: async () => ({}) }))
     await expect(fetchSummary()).rejects.toThrow('503')
+  })
+})
+
+describe('buildRequestsUrl', () => {
+  it('条件がなければ、/api/requests だけ', () => {
+    expect(buildRequestsUrl()).toBe('/api/requests')
+    expect(
+      buildRequestsUrl({ q: '  ', qms: false, categoryId: null, status: null, sort: null }),
+    ).toBe('/api/requests')
+  })
+
+  it('入っている条件だけを付ける', () => {
+    const url = buildRequestsUrl({
+      qms: true,
+      categoryId: 4,
+      status: '作業中',
+      sort: 'due_on',
+      includeArchived: true,
+    })
+    const params = new URL(url, 'http://x').searchParams
+    expect(params.get('qms')).toBe('true')
+    expect(params.get('category_id')).toBe('4')
+    expect(params.get('status')).toBe('作業中')
+    expect(params.get('sort')).toBe('due_on')
+    expect(params.get('include_archived')).toBe('true')
+    expect(params.has('q')).toBe(false)
+  })
+
+  it('検索の文字は、前後の空白を取って、安全な形に直して付ける', () => {
+    const url = buildRequestsUrl({ q: ' 100%&通関 ' })
+    expect(url).toBe('/api/requests?q=100%25%26%E9%80%9A%E9%96%A2')
+    expect(new URL(url, 'http://x').searchParams.get('q')).toBe('100%&通関')
+  })
+
+  it('カテゴリーの番号が 0 でも、条件として付ける', () => {
+    expect(buildRequestsUrl({ categoryId: 0 })).toBe('/api/requests?category_id=0')
+  })
+})
+
+describe('fetchCategories', () => {
+  it('/api/categories を呼び、配列を返す', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => [{ id: 1, name: 'HP' }] }))
+    expect(await fetchCategories()).toEqual([{ id: 1, name: 'HP' }])
+    expect(fetch).toHaveBeenCalledWith('/api/categories')
   })
 })

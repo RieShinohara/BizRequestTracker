@@ -26,6 +26,25 @@ export interface RequestRow {
   due_level: DueLevel
 }
 
+/** 並び替えの見せ方。null＝手動の並び */
+export type SortKey = 'priority' | 'due_on' | 'status' | null
+
+/** 検索・絞り込み・並び替えの条件（一覧の取得に使う） */
+export interface RequestQuery {
+  q: string
+  qms: boolean
+  categoryId: number | null
+  status: Status | null
+  sort: SortKey
+  includeArchived: boolean
+}
+
+/** 業務カテゴリー（GET /api/categories）。絞り込みの選択肢に使う */
+export interface Category {
+  id: number
+  name: string
+}
+
 /** 画面上部の件数（GET /api/summary） */
 export interface Summary {
   status_counts: Record<Status, number>

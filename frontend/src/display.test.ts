@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, progressText } from './display'
+import { formatDate, hasActiveFilter, progressText } from './display'
 
 describe('formatDate', () => {
   it('月/日（曜日）の形にする', () => {
@@ -19,5 +19,21 @@ describe('progressText', () => {
 
   it('チェックリストがないときは、空', () => {
     expect(progressText({ checklist_done: 0, checklist_total: 0 })).toBe('')
+  })
+})
+
+describe('hasActiveFilter', () => {
+  const none = { q: '', qms: false, categoryId: null, status: null }
+
+  it('条件がなければ、false', () => {
+    expect(hasActiveFilter(none)).toBe(false)
+    expect(hasActiveFilter({ ...none, q: '   ' })).toBe(false)
+  })
+
+  it('どれか1つでも入っていれば、true', () => {
+    expect(hasActiveFilter({ ...none, q: '通関' })).toBe(true)
+    expect(hasActiveFilter({ ...none, qms: true })).toBe(true)
+    expect(hasActiveFilter({ ...none, categoryId: 0 })).toBe(true)
+    expect(hasActiveFilter({ ...none, status: '完了' })).toBe(true)
   })
 })
