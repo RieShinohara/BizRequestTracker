@@ -15,6 +15,7 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [08-requesters-categories-api.md](08-requesters-categories-api.md) | 依頼者・カテゴリーの API の記録。ルーター、スキーマ、Depends、PATCH の「送った項目だけ」、重複を DB に判断させる理由、ステータスコード |
 | [09-template-items-api.md](09-template-items-api.md) | テンプレート項目の API の記録。PUT（全部入れ替え）の考え方、順番の表し方、入れ替えの作り方 |
 | [10-requests-crud-api.md](10-requests-crud-api.md) | 依頼の API（追加・取得・更新・削除）の記録。許される値の確認、PATCH の null、チェックリストの入れ替え、「いちばん上」の作り方、削除の条件 |
+| [11-summary-confirm-targets-api.md](11-summary-confirm-targets-api.md) | 件数と確認先の候補の API の記録。集計を DB に任せる、0件も返す、設定ファイル、過去の入力から候補を作る |
 
 ## 今後、追加する予定
 バックエンドの実装（DB 接続・テーブル・API）、画面（本番）、品質チェック、AWS へのデプロイ。
