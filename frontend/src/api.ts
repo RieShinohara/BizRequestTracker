@@ -1,5 +1,12 @@
 /** API を呼ぶ部品。画面からは、ここを通して API を呼ぶ。 */
-import type { Category, RequestQuery, RequestRow, Summary } from './types'
+import type {
+  Category,
+  RequestPatch,
+  RequestQuery,
+  RequestRow,
+  StatusChange,
+  Summary,
+} from './types'
 
 /** API が起きているか確かめる（GET /health）。つながれば true。 */
 export async function checkHealth(): Promise<boolean> {
@@ -48,6 +55,38 @@ export function fetchRequests(query: Partial<RequestQuery> = {}): Promise<Reques
 /** 業務カテゴリーの一覧（GET /api/categories） */
 export function fetchCategories(): Promise<Category[]> {
   return getJson<Category[]>('/api/categories')
+}
+
+/** 確認先の候補（GET /api/confirm-targets）。過去に入力した確認先も含まれる */
+export function fetchConfirmTargets(): Promise<string[]> {
+  return getJson<string[]>('/api/confirm-targets')
+}
+
+/**
+ * ステータス変更の指示を、API に送る形にする。確認先の空の文字は、null（未入力）にする。
+ * 確認先を指定しない変更（例：完了にする）では、confirm_to を送らない（以前の確認先を消さない）。
+ */
+export function statusChangeToPatch(change: StatusChange): RequestPatch {
+  const patch: RequestPatch = { status: change.status }
+  if (change.confirmTo !== undefined) {
+    patch.confirm_to = change.confirmTo?.trim() || null
+  }
+  return patch
+}
+
+/**
+ * 依頼の更新（PATCH /api/requests/{id}）。送った項目だけが変わる。
+ * 失敗（つながらない・エラーの番号）したら、例外を投げる。
+ */
+export async function updateRequest(id: number, patch: RequestPatch): Promise<void> {
+  const response = await fetch(`/api/requests/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  })
+  if (!response.ok) {
+    throw new Error(`API がエラーを返しました（${response.status}）：PATCH /api/requests/${id}`)
+  }
 }
 
 /** 画面上部の件数（GET /api/summary） */

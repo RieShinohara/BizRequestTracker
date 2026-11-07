@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
-import { fetchCategories, fetchRequests, fetchSummary } from './api'
+import {
+  fetchCategories,
+  fetchRequests,
+  fetchSummary,
+  statusChangeToPatch,
+  updateRequest,
+} from './api'
 import RequestFilters from './components/RequestFilters.vue'
 import RequestTable from './components/RequestTable.vue'
 import SummaryChips from './components/SummaryChips.vue'
 import { hasActiveFilter } from './display'
-import type { Category, RequestQuery, RequestRow, Summary } from './types'
+import type { Category, RequestQuery, RequestRow, StatusChange, Summary } from './types'
 
 const rows = ref<RequestRow[]>([])
 const summary = ref<Summary | null>(null)
@@ -58,6 +64,22 @@ async function reload() {
 
 onMounted(reload)
 
+// 画面の下に、一時的に出すお知らせ（保存に失敗したときなど）
+const notice = ref('')
+const noticeOpen = ref(false)
+
+// 一覧からのステータス変更。保存できてもできなくても、一覧と件数を取り直して、
+// 画面を API の実際の状態に合わせる（別の画面で変わっていた場合も、ずれたままにしない）
+async function changeStatus(change: StatusChange) {
+  try {
+    await updateRequest(change.id, statusChangeToPatch(change))
+  } catch {
+    notice.value = 'ステータスを変更できませんでした。もう一度お試しください。'
+    noticeOpen.value = true
+  }
+  await reload()
+}
+
 // 条件が変わったら、取り直す。検索の文字は、入力が止まってから（打つたびに API を呼ばない）
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 watch(query, (now, before) => {
@@ -107,9 +129,17 @@ onUnmounted(() => clearTimeout(searchTimer))
             </template>
           </v-alert>
           <v-progress-linear v-if="loading" indeterminate />
-          <RequestTable v-if="!errorMessage" :rows="rows" :filtered="hasActiveFilter(query)" />
+          <RequestTable
+            v-if="!errorMessage"
+            :rows="rows"
+            :filtered="hasActiveFilter(query)"
+            @change-status="changeStatus"
+          />
         </v-card>
       </v-container>
     </v-main>
+    <v-snackbar v-model="noticeOpen" color="error" :timeout="5000" data-testid="notice">
+      {{ notice }}
+    </v-snackbar>
   </v-app>
 </template>

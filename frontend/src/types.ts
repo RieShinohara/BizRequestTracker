@@ -45,6 +45,19 @@ export interface Category {
   name: string
 }
 
+/** 依頼の更新で送る項目（PATCH /api/requests/{id}）。送った項目だけが変わる */
+export interface RequestPatch {
+  status?: Status
+  confirm_to?: string | null
+}
+
+/** 一覧からのステータス変更の指示。確認先は、「確認待ち」にするときだけ付く */
+export interface StatusChange {
+  id: number
+  status: Status
+  confirmTo?: string | null
+}
+
 /** 画面上部の件数（GET /api/summary） */
 export interface Summary {
   status_counts: Record<Status, number>

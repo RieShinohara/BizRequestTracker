@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buildRequestsUrl, checkHealth, fetchCategories, fetchRequests, fetchSummary } from './api'
+import {
+  buildRequestsUrl,
+  checkHealth,
+  fetchCategories,
+  fetchConfirmTargets,
+  fetchRequests,
+  fetchSummary,
+  statusChangeToPatch,
+  updateRequest,
+} from './api'
 
 function mockFetch(implementation: () => Promise<unknown>) {
   vi.stubGlobal('fetch', vi.fn(implementation))
@@ -115,5 +124,61 @@ describe('fetchCategories', () => {
     mockFetch(async () => ({ ok: true, json: async () => [{ id: 1, name: 'HP' }] }))
     expect(await fetchCategories()).toEqual([{ id: 1, name: 'HP' }])
     expect(fetch).toHaveBeenCalledWith('/api/categories')
+  })
+})
+
+describe('fetchConfirmTargets', () => {
+  it('/api/confirm-targets を呼び、文字の配列を返す', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => ['依頼者', '薬事部'] }))
+    expect(await fetchConfirmTargets()).toEqual(['依頼者', '薬事部'])
+    expect(fetch).toHaveBeenCalledWith('/api/confirm-targets')
+  })
+})
+
+describe('statusChangeToPatch', () => {
+  it('確認先を指定しない変更では、confirm_to を送らない（以前の確認先を消さない）', () => {
+    expect(statusChangeToPatch({ id: 1, status: '完了' })).toEqual({ status: '完了' })
+  })
+
+  it('確認待ちにするときは、確認先の前後の空白を取って送る', () => {
+    expect(statusChangeToPatch({ id: 1, status: '確認待ち', confirmTo: ' 薬事部 ' })).toEqual({
+      status: '確認待ち',
+      confirm_to: '薬事部',
+    })
+  })
+
+  it('確認先が空なら、null（未入力）にする', () => {
+    expect(statusChangeToPatch({ id: 1, status: '確認待ち', confirmTo: '  ' })).toEqual({
+      status: '確認待ち',
+      confirm_to: null,
+    })
+    expect(statusChangeToPatch({ id: 1, status: '確認待ち', confirmTo: null })).toEqual({
+      status: '確認待ち',
+      confirm_to: null,
+    })
+  })
+})
+
+describe('updateRequest', () => {
+  it('PATCH で、送る項目を JSON にして送る', async () => {
+    mockFetch(async () => ({ ok: true, json: async () => ({}) }))
+    await updateRequest(9, { status: '作業中' })
+    expect(fetch).toHaveBeenCalledWith('/api/requests/9', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"status":"作業中"}',
+    })
+  })
+
+  it('API がエラーの番号を返したら、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 404, json: async () => ({}) }))
+    await expect(updateRequest(9, { status: '完了' })).rejects.toThrow('404')
+  })
+
+  it('API につながらなかったら、例外を投げる', async () => {
+    mockFetch(async () => {
+      throw new TypeError('Failed to fetch')
+    })
+    await expect(updateRequest(9, { status: '完了' })).rejects.toThrow()
   })
 })
