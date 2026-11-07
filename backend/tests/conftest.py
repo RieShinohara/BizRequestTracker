@@ -59,6 +59,36 @@ def engine():
 
 
 @pytest.fixture
+def db(engine):
+    """API のテスト用の Session。
+
+    commit しても、本当の保存にはならず（仮の保存）、テストの最後に全部取り消す。
+    API の中と、テストの中で、同じ Session を使う（API で作ったものを、テストから確認できる）。
+    """
+    connection = engine.connect()
+    outer = connection.begin()
+    with Session(connection, join_transaction_mode="create_savepoint") as s:
+        yield s
+    outer.rollback()
+    connection.close()
+
+
+@pytest.fixture
+def client(db):
+    """API を試すための道具。API が使う Session を、上の db に差し替える。"""
+    from fastapi.testclient import TestClient
+
+    from app.deps import get_db
+    from app.main import app
+
+    app.dependency_overrides[get_db] = lambda: db
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.fixture
 def session(engine):
     """1テストごとに、最後に取り消す（rollback）。テスト同士が影響しあわない。"""
     with Session(engine) as s:

@@ -29,3 +29,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI の書き方（引数の初期値に Depends(...)）は、警告の対象外にする
+extend-immutable-calls = ["fastapi.Depends"]
