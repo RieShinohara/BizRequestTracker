@@ -23,9 +23,10 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [16-frontend-request-list.md](16-frontend-request-list.md) | 画面の一覧と件数の表示の記録。期限の色は API が決める、2つの API の同時呼び出し、失敗は例外で伝える、日付の曜日と UTC |
 | [17-frontend-search-filter-sort.md](17-frontend-search-filter-sort.md) | 画面の検索・絞り込み・並び替えの記録。URL の作り方（`URLSearchParams`）、デバウンス、古い応答で上書きしない、`defineModel` |
 | [18-frontend-status-change.md](18-frontend-status-change.md) | 画面のステータス変更と確認先の記録。子から親へ `emit` で伝える、PATCH で「送らない」と「null を送る」の違い、成功しても失敗しても取り直す |
+| [19-frontend-detail-modal.md](19-frontend-detail-modal.md) | 画面の詳細モーダル（表示と編集）の記録。ロジックを画面から切り離してテストする、依頼者の2段階の保存、確認先は確認待ちのときだけ送る、`@click.stop` |
 
 ## 今後、追加する予定
-画面の続き（詳細モーダル・ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
+画面の続き（依頼の追加・チェックリスト・アーカイブと削除・ドラッグ）、品質チェック、AWS へのデプロイ。（バックエンドは、API 全17本まで完成）
 
 ## 会話の記録について
 Claude Codeとの会話は、PCの中に保存されています。
