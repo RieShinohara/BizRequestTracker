@@ -47,8 +47,37 @@ export interface Category {
 
 /** 依頼の更新で送る項目（PATCH /api/requests/{id}）。送った項目だけが変わる */
 export interface RequestPatch {
+  title?: string
+  description?: string | null
+  requester_id?: number
+  category_id?: number
+  received_on?: string
+  due_on?: string
   status?: Status
+  priority?: Priority
   confirm_to?: string | null
+  qms?: boolean
+}
+
+/** 依頼者（GET /api/requesters）。内線番号は、先頭の 0 を守るため、文字で扱う */
+export interface Requester {
+  id: number
+  name: string
+  extension: string | null
+}
+
+/** チェックリストの1項目 */
+export interface ChecklistItem {
+  name: string
+  done: boolean
+}
+
+/** 依頼1件（GET /api/requests/{id}）。詳細モーダル用。一覧の項目に、詳しい項目が加わる */
+export interface RequestDetail extends Omit<RequestRow, 'requester'> {
+  requester: Requester
+  description: string | null
+  received_on: string // YYYY-MM-DD
+  checklist_items: ChecklistItem[]
 }
 
 /** 一覧からのステータス変更の指示。確認先は、「確認待ち」にするときだけ付く */
