@@ -97,6 +97,17 @@ export async function updateRequest(id: number, patch: RequestPatch): Promise<vo
   }
 }
 
+/**
+ * 依頼の完全な削除（DELETE /api/requests/{id}）。チェックリストも一緒に消える。元に戻せない。
+ * アーカイブ中の依頼だけ消せる（そうでないと 409）。失敗したら、例外を投げる。
+ */
+export async function deleteRequest(id: number): Promise<void> {
+  const response = await fetch(`/api/requests/${id}`, { method: 'DELETE' })
+  if (!response.ok) {
+    throw new Error(`API がエラーを返しました（${response.status}）：DELETE /api/requests/${id}`)
+  }
+}
+
 /** 依頼1件（GET /api/requests/{id}）。詳細モーダル用 */
 export function fetchRequest(id: number): Promise<RequestDetail> {
   return getJson<RequestDetail>(`/api/requests/${id}`)
