@@ -1,11 +1,53 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useDraggable } from 'vue-draggable-plus'
 import { PRIORITY_COLOR, STATUS_COLOR, formatDate, progressText } from '../display'
+import { moveItem } from '../order'
 import { STATUSES, type RequestRow, type Status, type StatusChange } from '../types'
 import ConfirmToDialog from './ConfirmToDialog.vue'
 
-defineProps<{ rows: RequestRow[]; filtered: boolean }>()
-const emit = defineEmits<{ 'change-status': [change: StatusChange]; open: [id: number] }>()
+// dragDisabledReason＝ドラッグできない理由（ドラッグできるときは null）
+const props = defineProps<{
+  rows: RequestRow[]
+  filtered: boolean
+  dragDisabledReason: string | null
+}>()
+const emit = defineEmits<{
+  'change-status': [change: StatusChange]
+  open: [id: number]
+  reorder: [rows: RequestRow[]]
+}>()
+
+// 表示する行。ドラッグの部品が、この配列を並べ替える。親から新しい一覧が届いたら、入れ替える
+const list = ref<RequestRow[]>([...props.rows])
+watch(
+  () => props.rows,
+  (rows) => {
+    list.value = [...rows]
+  },
+)
+
+// ドラッグ（行の並び替え）。取っ手（.drag-handle）だけでつかめる。
+// 並びは、「ドラッグの前の一覧（props.rows）」と、動かした位置から、自分で計算して、親に伝える
+// （保存は、親が行う。保存できなければ、親が一覧を取り直して、元の並びに戻る）
+const tbody = ref<HTMLElement | null>(null)
+const { option } = useDraggable(tbody, list, {
+  handle: '.drag-handle',
+  draggable: '.row',
+  animation: 150,
+  disabled: props.dragDisabledReason !== null,
+  onUpdate: (event) => {
+    const { oldDraggableIndex, newDraggableIndex } = event
+    if (oldDraggableIndex === undefined || newDraggableIndex === undefined) return
+    const moved = moveItem(props.rows, oldDraggableIndex, newDraggableIndex)
+    if (moved !== props.rows) emit('reorder', moved)
+  },
+})
+// ドラッグできる・できないが変わったら、部品に伝える
+watch(
+  () => props.dragDisabledReason,
+  (reason) => option('disabled', reason !== null),
+)
 
 // 「確認待ち」を選んだ依頼。確認先を入力してもらう間だけ入る
 const confirming = ref<RequestRow | null>(null)
@@ -41,17 +83,28 @@ function finishConfirm(confirmTo: string) {
         <th style="width: 60px">QMS</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody ref="tbody">
       <tr
-        v-for="row in rows"
+        v-for="row in list"
         :key="row.id"
         :class="{ archived: row.archived }"
         class="row"
         data-testid="row"
         @click="emit('open', row.id)"
       >
-        <!-- ドラッグの取っ手：動くようになるのは、手動の並びの Issue から -->
-        <td><v-icon icon="mdi-drag" color="grey-lighten-1" /></td>
+        <!-- ドラッグの取っ手。手動の並びのときだけ使える（使えないときは、理由を出す） -->
+        <td
+          class="handle-cell"
+          :title="dragDisabledReason ?? 'ドラッグして、並びを変える'"
+          @click.stop
+        >
+          <v-icon
+            icon="mdi-drag"
+            :class="dragDisabledReason === null ? 'drag-handle' : 'drag-handle-disabled'"
+            :color="dragDisabledReason === null ? 'grey-darken-1' : 'grey-lighten-2'"
+            data-testid="drag-handle"
+          />
+        </td>
         <td>
           <v-chip :color="PRIORITY_COLOR[row.priority]" size="small" label>
             {{ row.priority }}
@@ -134,6 +187,12 @@ function finishConfirm(confirmTo: string) {
 </template>
 
 <style scoped>
+.drag-handle {
+  cursor: grab;
+}
+.drag-handle-disabled {
+  cursor: not-allowed;
+}
 .row {
   cursor: pointer;
 }

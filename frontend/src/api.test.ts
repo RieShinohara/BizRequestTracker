@@ -5,6 +5,7 @@ import {
   fetchCategories,
   fetchConfirmTargets,
   createRequest,
+  saveOrder,
   deleteRequest,
   fetchRequest,
   fetchTemplateItems,
@@ -288,5 +289,29 @@ describe('deleteRequest / archived', () => {
       headers: { 'Content-Type': 'application/json' },
       body: '{"archived":false}',
     })
+  })
+})
+
+describe('saveOrder', () => {
+  it('PUT で、番号の並びを送る', async () => {
+    mockFetch(async () => ({ ok: true, status: 204 }))
+    await saveOrder([5, 2, 9])
+    expect(fetch).toHaveBeenCalledWith('/api/requests/order', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"ids":[5,2,9]}',
+    })
+  })
+
+  it('一覧が古いとき（409）は、例外を投げる', async () => {
+    mockFetch(async () => ({ ok: false, status: 409, json: async () => ({}) }))
+    await expect(saveOrder([1])).rejects.toThrow('409')
+  })
+
+  it('API につながらなかったら、例外を投げる', async () => {
+    mockFetch(async () => {
+      throw new TypeError('Failed to fetch')
+    })
+    await expect(saveOrder([1])).rejects.toThrow()
   })
 })
