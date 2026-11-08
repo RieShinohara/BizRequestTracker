@@ -236,12 +236,13 @@ async function save() {
         <v-card-item>
           <v-row dense align="center">
             <v-col cols="12" md="7">
-              <v-text-field
-                v-model="form.title"
-                label="タイトル（必須）"
-                hide-details
-                data-testid="title"
-              />
+              <v-text-field v-model="form.title" hide-details data-testid="title">
+                <template #label>
+                  タイトル<span class="required-mark"
+                    ><span class="paren">（</span>必須<span class="paren">）</span></span
+                  >
+                </template>
+              </v-text-field>
             </v-col>
             <v-col cols="6" md="3">
               <v-select
@@ -273,12 +274,17 @@ async function save() {
                   <v-combobox
                     :model-value="form.requesterName"
                     :items="requesterNames"
-                    label="依頼者（必須）"
                     hint="登録済みから選ぶか、新しい名前を入力"
                     persistent-hint
                     data-testid="requester"
                     @update:model-value="onRequesterChange"
-                  />
+                  >
+                    <template #label>
+                      依頼者<span class="required-mark"
+                        ><span class="paren">（</span>必須<span class="paren">）</span></span
+                      >
+                    </template>
+                  </v-combobox>
                 </v-col>
                 <v-col cols="12" sm="5">
                   <v-text-field
@@ -308,12 +314,13 @@ async function save() {
                   <v-text-field v-model="form.receivedOn" type="date" label="受付日" />
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <v-text-field
-                    v-model="form.dueOn"
-                    type="date"
-                    label="期限日（必須）"
-                    data-testid="due-on"
-                  />
+                  <v-text-field v-model="form.dueOn" type="date" data-testid="due-on">
+                    <template #label>
+                      期限日<span class="required-mark"
+                        ><span class="paren">（</span>必須<span class="paren">）</span></span
+                      >
+                    </template>
+                  </v-text-field>
                 </v-col>
               </v-row>
               <v-checkbox v-model="form.qms" label="QMS チェック" hide-details density="compact" />
@@ -469,6 +476,19 @@ async function save() {
 </template>
 
 <style scoped>
+/* 入力欄の名前の「必須」：基調色（インディゴ）の小さな札にして、目立たせる。かっこは、札にするので隠す */
+.required-mark {
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.1);
+  border-radius: 4px;
+  padding: 0 5px;
+  margin-left: 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+.required-mark .paren {
+  display: none;
+}
 .checklist {
   max-height: 320px;
   overflow-y: auto;

@@ -1,0 +1,15 @@
+/* 画面全体の見た目の決まり。色は main.ts のテーマ、フォントはここ。 */
+
+/*
+ * フォント：Noto Sans JP（アプリに同梱。main.ts で読み込む）。
+ * アルファベットも細めで、「HP」などの横棒が太く見えない。入っていない文字は、あとの書体で補う。
+ * Vuetify の部品は、それぞれ書体を決めているため、全部に指定する（!important）。
+ * アイコン（mdi）は、::before で別の書体を使うので、影響を受けない。
+ * モーダルやメニューは、画面の外側（.v-overlay-container）に描かれるので、そちらにも指定する。
+ */
+.v-application,
+.v-application *,
+.v-overlay-container * {
+  font-family:
+    'Noto Sans JP Variable', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif !important;
+}

@@ -13,6 +13,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@fontsource-variable/noto-sans-jp": "^5.3.1",
     "@mdi/font": "^7.4.47",
     "vue": "^3.5.44",
     "vue-draggable-plus": "^0.6.1",
