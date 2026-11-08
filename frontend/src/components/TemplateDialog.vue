@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { fetchTemplateItems, saveTemplateItems } from '../api'
-import { categoryErrorMessage } from '../categoryManage'
+import { apiErrorMessage, fetchTemplateItems, saveTemplateItems } from '../api'
 import {
   addTemplateItem,
   isTemplateChanged,
@@ -87,10 +86,7 @@ async function save() {
     await saveTemplateItems(category.id, normalizeTemplate(next))
     emit('close')
   } catch (error) {
-    errorMessage.value = categoryErrorMessage(
-      error,
-      '保存できませんでした。もう一度お試しください。',
-    )
+    errorMessage.value = apiErrorMessage(error, '保存できませんでした。もう一度お試しください。')
   } finally {
     saving.value = false
   }

@@ -35,6 +35,7 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [28-frontend-template-edit.md](28-frontend-template-edit.md) | 画面のテンプレート編集の記録。コピーを直して「保存」でまとめて送る、変更があるときは閉じられない（`persistent`）、書きかけの文字も変更に数える、「今ある依頼は変わらない」を画面に書く |
 | [29-frontend-unsaved-changes.md](29-frontend-unsaved-changes.md) | 変更中にうっかり閉じない（詳細モーダル）の記録。開いたときの写しと比べて変更を決める、書きかけの文字も数える、`persistent` はユーザーの操作だけを止める |
 | [30-frontend-keyboard-a11y.md](30-frontend-keyboard-a11y.md) | 一覧をキーボードで操作できる・読み上げソフトに伝える記録。本物のボタンを使う、閉じたあと開いたボタンへ戻す、「戻っているのに枠が出ない」、画面から隠して読み上げだけに残す |
+| [31-frontend-error-messages.md](31-frontend-error-messages.md) | エラーの理由を出す・通信コードを整理する記録。通信の入口を1つにする、画面の親切とAPIの守りは別、送る形で文字数を数える、理由が読めないときの逃げ道 |
 
 ## 今後、追加する予定
 AWS へのデプロイ。（バックエンドは API 全17本、画面は一覧・検索・編集・追加・チェックリスト・アーカイブと削除・ドラッグまで完成）

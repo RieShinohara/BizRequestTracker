@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, createCategory, deleteCategory, renameCategory } from './api'
 import {
   CATEGORY_NAME_MAX,
-  categoryErrorMessage,
   deleteBlockedReason,
   hasCategory,
   validateCategoryName,
@@ -46,23 +45,6 @@ describe('deleteBlockedReason', () => {
 
   it('使っている依頼が 0 件なら、null（削除できる）', () => {
     expect(deleteBlockedReason({ id: 1, name: 'HP', request_count: 0 })).toBeNull()
-  })
-})
-
-describe('categoryErrorMessage', () => {
-  it('API が理由を返していたら、それを使う', () => {
-    const error = new ApiError(409, '同じ名前のカテゴリーがすでにあります', 'x')
-    expect(categoryErrorMessage(error, '失敗しました')).toBe('同じ名前のカテゴリーがすでにあります')
-  })
-
-  it('理由がない（読み取れなかった）ときは、操作ごとの文を使う', () => {
-    expect(categoryErrorMessage(new ApiError(500, null, 'x'), '失敗しました')).toBe('失敗しました')
-  })
-
-  it('ApiError でない失敗（つながらない、など）も、操作ごとの文を使う', () => {
-    expect(categoryErrorMessage(new TypeError('Failed to fetch'), '失敗しました')).toBe(
-      '失敗しました',
-    )
   })
 })
 

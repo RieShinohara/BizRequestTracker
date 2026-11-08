@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
+  apiErrorMessage,
   fetchCategories,
   fetchRequests,
   fetchSummary,
@@ -78,8 +79,11 @@ const noticeOpen = ref(false)
 async function changeStatus(change: StatusChange) {
   try {
     await updateRequest(change.id, statusChangeToPatch(change))
-  } catch {
-    notice.value = 'ステータスを変更できませんでした。もう一度お試しください。'
+  } catch (error) {
+    notice.value = apiErrorMessage(
+      error,
+      'ステータスを変更できませんでした。もう一度お試しください。',
+    )
     noticeOpen.value = true
   }
   await reload()
@@ -98,8 +102,9 @@ async function onReorder(moved: RequestRow[]) {
   rows.value = moved
   try {
     await saveOrder(orderIds(moved))
-  } catch {
-    notice.value = '並びを保存できませんでした。一覧を取り直しました。もう一度お試しください。'
+  } catch (error) {
+    // API の理由（例：一覧が古くなっています）があれば、それを使う。一覧は、このあと取り直す
+    notice.value = `${apiErrorMessage(error, '並びを保存できませんでした。')}（一覧を取り直しました）`
     noticeOpen.value = true
   }
   try {

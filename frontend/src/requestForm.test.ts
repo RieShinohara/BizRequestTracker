@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   CATEGORY_MESSAGE,
+  MAX_LENGTH,
   REQUIRED_MESSAGE,
   emptyForm,
   detailToForm,
@@ -83,6 +84,45 @@ describe('validateForm', () => {
     expect(
       validateForm(form({ description: '', confirmTo: '', requesterExtension: '' })),
     ).toBeNull()
+  })
+
+  describe('文字数の上限', () => {
+    const long = (n: number) => 'あ'.repeat(n)
+
+    it.each([
+      ['タイトル', 'title', MAX_LENGTH.title, 'タイトルは200文字までです'],
+      ['詳細', 'description', MAX_LENGTH.description, '詳細は10000文字までです'],
+      ['依頼者の名前', 'requesterName', MAX_LENGTH.requesterName, '依頼者の名前は100文字までです'],
+      ['内線番号', 'requesterExtension', MAX_LENGTH.requesterExtension, '内線番号は20文字までです'],
+    ] as const)('%s は、上限ちょうどなら通り、1文字超えるとメッセージ', (_n, key, max, message) => {
+      expect(validateForm(form({ [key]: long(max) }))).toBeNull()
+      expect(validateForm(form({ [key]: long(max + 1) }))).toBe(message)
+    })
+
+    it('前後の空白は、数えない（送るときに、取るため）', () => {
+      expect(validateForm(form({ title: ` ${long(MAX_LENGTH.title)} ` }))).toBeNull()
+    })
+
+    it('確認先は、「確認待ち」のときだけ調べる（それ以外では、送らないため）', () => {
+      const tooLong = long(MAX_LENGTH.confirmTo + 1)
+      expect(validateForm(form({ status: '確認待ち', confirmTo: tooLong }))).toBe(
+        '確認先は100文字までです',
+      )
+      expect(validateForm(form({ status: '作業中', confirmTo: tooLong }))).toBeNull()
+    })
+
+    it('チェックリストの項目が長すぎたら、メッセージ', () => {
+      const ok = [{ name: long(MAX_LENGTH.checklistItem), done: false }]
+      const bad = [{ name: long(MAX_LENGTH.checklistItem + 1), done: false }]
+      expect(validateForm(form({ checklist: ok }))).toBeNull()
+      expect(validateForm(form({ checklist: bad }))).toBe('チェックリストの項目は、200文字までです')
+    })
+
+    it('必須の未入力が先に知らされる', () => {
+      expect(validateForm(form({ title: '', description: long(MAX_LENGTH.description + 1) }))).toBe(
+        REQUIRED_MESSAGE,
+      )
+    })
   })
 })
 

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { createCategory, deleteCategory, fetchCategories, renameCategory } from '../api'
-import { categoryErrorMessage, deleteBlockedReason, validateCategoryName } from '../categoryManage'
+import {
+  apiErrorMessage,
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+  renameCategory,
+} from '../api'
+import { deleteBlockedReason, validateCategoryName } from '../categoryManage'
 import type { CategoryWithCount } from '../types'
 import TemplateDialog from './TemplateDialog.vue'
 
@@ -60,7 +66,7 @@ async function run(action: () => Promise<unknown>, failure: string): Promise<boo
     emit('changed')
     return true
   } catch (error) {
-    errorMessage.value = categoryErrorMessage(error, failure)
+    errorMessage.value = apiErrorMessage(error, failure)
     return false
   } finally {
     working.value = false
