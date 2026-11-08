@@ -13,4 +13,5 @@
 ## 画像・アイコン
 
 - アイコン：Material Design Icons（`@mdi/font` 7.4.47。Pictogrammers 作）。部品の `package.json` の表記は Apache-2.0、同梱の `LICENSE` は「Pictogrammers Free License」（無料・オープンソース）。部品として入れていて、中身を書き換えていない
+- ブラウザのタブのアイコン（`frontend/public/favicon.svg`、`prototype/public/favicon.svg`）：このプロジェクトで、自作したもの（インディゴの角丸の四角に、白いチェックマーク。単純な図形）。第三者の素材は使っていない
 - 画像：使っていない
