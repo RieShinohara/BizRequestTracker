@@ -18,6 +18,7 @@ uv run uvicorn app.main:app --port 8000
 
 # テスト・静的チェック
 uv run pytest
+uv run pytest --cov   # テストと、カバレッジ（テストが通った範囲）の測定。しきい値を下回ると失敗する
 uv run ruff check .
 ```
 
