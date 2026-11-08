@@ -88,5 +88,7 @@ jobs:
       - run: npm run lint
       # 整形（Prettier）が、そろっているか。ずれていたら、手元で、触ったファイルを npx prettier --write で直す
       - run: npm run format:check
-      - run: npm run test
+      # テストと同時に、カバレッジ（どこまで通ったか）を測る。しきい値を下回ると、失敗する（frontend/vite.config.ts）。
+      # テストは1回だけ動かす（npm run test を、置き換えている）
+      - run: npm run test:coverage
       - run: npm run build
