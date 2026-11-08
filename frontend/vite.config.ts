@@ -18,6 +18,10 @@ export default defineConfig({
     },
   },
   test: {
+    // ふつうのテスト（関数だけ）は、軽い node で動かす。部品を描くテストは、そのファイルの先頭に
+    // 「// @vitest-environment jsdom」と書いて、ブラウザの代わり（jsdom）で動かす
     environment: 'node',
+    // Vuetify は、部品の中で CSS を読み込む。テストの道具に、そのまま読ませる（CSS の中身は、使わない）
+    server: { deps: { inline: ['vuetify'] } },
   },
 })

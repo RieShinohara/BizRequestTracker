@@ -46,6 +46,7 @@
 | ドラッグ＆ドロップ | vue-draggable-plus | |
 | 画面のビルド | Vite | |
 | 画面のテスト・静的チェック・整形 | Vitest、ESLint、Prettier | |
+| 画面の部品のテスト | @vue/test-utils、jsdom | 2026-11-08 に追加。Vue の部品を、テストの中で描いて、操作を再現する。jsdom は、ブラウザの代わり |
 | 画面のパッケージ管理 | npm | Windows の PowerShell では `npm.cmd` で実行する |
 | 作業用の道具 | Git ＋ GitHub、GitHub Actions、Terraform、AWS（EC2 ＋ RDS） | |
 
@@ -56,7 +57,7 @@
 - MySQL につなぐ Python の部品（ドライバ）：**PyMySQL**（Python だけで書かれていて、Windows でも追加の準備が要らない）
 - ポート番号：API は 8000、MySQL は 3306、画面（Vite）は 5173（いずれも標準の番号）
 - 日本の祝日を判定するライブラリ：**jpholiday**（1.0.3。2026-11-07 に決定）。候補の `holidays`（0.108）と、国民の休日・成人の日などの判定を試して、同じ結果だった。日本だけで足りて、使い方が簡単で小さいため、jpholiday を選んだ。会社の休み（12/29〜1/3、8/12〜15）は、`backend/app/settings.py` に書く
-- 本番の画面（`frontend/`。2026-11-07 に作成。`frontend/package-lock.json` で固定）：Vue 3.5.45、Vuetify 4.3.2、Vite 8.3.6、TypeScript 6.0.3、Vitest 5.1.0、ESLint 10.14、Prettier 3.9.10（プロトタイプと同じ系統。部品は同じ）
+- 本番の画面（`frontend/`。2026-11-07 に作成。`frontend/package-lock.json` で固定）：Vue 3.5.45、Vuetify 4.3.2、Vite 8.3.6、TypeScript 6.0.3、Vitest 5.1.0、ESLint 10.14、Prettier 3.9.10（プロトタイプと同じ系統。部品は同じ）。部品のテスト用に、@vue/test-utils 2.5.1、jsdom 30.1.3（どちらも版を固定。公開から2週間以上たったものを選んだ）
 - フォント：Noto Sans JP（`@fontsource-variable/noto-sans-jp` 5.3.1。2026-11-07 に決定。SIL Open Font License 1.1。アプリに同梱するので、外部の通信は不要。出典は `CREDITS.md`）。候補の BIZ UDPゴシック、Zen角ゴシック New と、画面上で見比べて選んだ
 - ドラッグ＆ドロップの部品：vue-draggable-plus 0.6.1（2026-11-07 に導入。`frontend/package-lock.json` で固定）。本番に入る部品の `npm audit` は、0件
 - 画面の開発用サーバー：`/api` と `/health` を、API の 8000 番に中継する（`frontend/vite.config.ts`）。画面と API が「同じ入口」に見えるので、ブラウザの制限（CORS）を気にしなくてよい。本番（AWS）での中継の方法は、デプロイのときに決める
