@@ -1,5 +1,4 @@
 /** カテゴリー管理の決まりごと。画面の部品から切り離して、テストしやすくする。 */
-import { ApiError } from './api'
 import type { CategoryWithCount } from './types'
 
 /** カテゴリー名の長さの上限（API と同じ。docs/data-model.md） */
@@ -21,15 +20,6 @@ export function deleteBlockedReason(category: CategoryWithCount): string | null 
     return `このカテゴリーを使っている依頼が${category.request_count}件あるため、削除できません`
   }
   return null
-}
-
-/**
- * 失敗したときに、画面に出す文。API が理由（日本語）を返していれば、それを使う
- * （例：同じ名前がすでにある、使っている依頼がある）。読み取れなければ、操作ごとの文を使う。
- */
-export function categoryErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof ApiError && error.detail) return error.detail
-  return fallback
 }
 
 /** 指定した番号のカテゴリーが、一覧にあるか（削除されたカテゴリーで絞り込んだままにしないため） */

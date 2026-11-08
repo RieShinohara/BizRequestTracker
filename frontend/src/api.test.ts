@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  ApiError,
+  apiErrorMessage,
   buildRequestsUrl,
   checkHealth,
   fetchCategories,
@@ -313,5 +315,64 @@ describe('saveOrder', () => {
       throw new TypeError('Failed to fetch')
     })
     await expect(saveOrder([1])).rejects.toThrow()
+  })
+})
+
+describe('依頼まわりの失敗は、API の理由つきの ApiError になる', () => {
+  function failWith(status: number, body: unknown) {
+    mockFetch(async () => ({ ok: false, status, json: async () => body }))
+  }
+
+  it('更新（PATCH）：404 の理由を、detail に持つ', async () => {
+    failWith(404, { detail: '依頼が見つかりません' })
+    const error = await updateRequest(9, { status: '完了' }).catch((e) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(404)
+    expect(error.detail).toBe('依頼が見つかりません')
+    expect(error.message).toContain('404')
+  })
+
+  it('削除：アーカイブ中でない（409）の理由を、detail に持つ', async () => {
+    failWith(409, { detail: 'アーカイブ中の依頼だけ削除できます' })
+    const error = await deleteRequest(9).catch((e) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.detail).toBe('アーカイブ中の依頼だけ削除できます')
+  })
+
+  it('並びの保存：古いとき（409）の理由を、detail に持つ', async () => {
+    failWith(409, { detail: '一覧が古くなっています。開き直してください' })
+    const error = await saveOrder([1]).catch((e) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.detail).toBe('一覧が古くなっています。開き直してください')
+  })
+
+  it('依頼者の登録：同じ名前（409）の理由を、detail に持つ', async () => {
+    failWith(409, { detail: '同じ名前の依頼者がすでにあります' })
+    const error = await createRequester('（架空）山田', '').catch((e) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.detail).toBe('同じ名前の依頼者がすでにあります')
+  })
+
+  it('取得（GET）の失敗も、ApiError。入力の検査の 422（detail が配列）は、detail が null', async () => {
+    failWith(422, { detail: [{ msg: 'too long' }] })
+    const error = await fetchRequest(9).catch((e) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error.status).toBe(422)
+    expect(error.detail).toBeNull()
+  })
+})
+
+describe('apiErrorMessage', () => {
+  it('API が理由を返していたら、それを使う', () => {
+    const error = new ApiError(409, '同じ名前のカテゴリーがすでにあります', 'x')
+    expect(apiErrorMessage(error, '失敗しました')).toBe('同じ名前のカテゴリーがすでにあります')
+  })
+
+  it('理由がない（読み取れなかった）ときは、操作ごとの文を使う', () => {
+    expect(apiErrorMessage(new ApiError(500, null, 'x'), '失敗しました')).toBe('失敗しました')
+  })
+
+  it('ApiError でない失敗（つながらない、など）も、操作ごとの文を使う', () => {
+    expect(apiErrorMessage(new TypeError('Failed to fetch'), '失敗しました')).toBe('失敗しました')
   })
 })

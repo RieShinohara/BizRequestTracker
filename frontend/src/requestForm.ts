@@ -47,10 +47,42 @@ export function detailToForm(detail: RequestDetail): RequestForm {
   }
 }
 
-/** 必須の項目（タイトル・依頼者・期限日・カテゴリー）が入っているか調べる。問題があれば、メッセージを返す。 */
+/** 文字数の上限（API と同じ。docs/data-model.md）。超えると、API が 422 で断るので、保存の前に、分かる文で知らせる */
+export const MAX_LENGTH = {
+  title: 200,
+  description: 10000,
+  requesterName: 100,
+  requesterExtension: 20,
+  confirmTo: 100,
+  checklistItem: 200,
+} as const
+
+/**
+ * 保存してよいか調べる。問題があれば、メッセージを返す（最初に見つけた1つ）。
+ * 必須の項目（タイトル・依頼者・期限日・カテゴリー）が入っているか、文字数の上限を超えていないか。
+ */
 export function validateForm(form: RequestForm): string | null {
   if (!form.title.trim() || !form.requesterName.trim() || !form.dueOn) return REQUIRED_MESSAGE
   if (form.categoryId === null) return CATEGORY_MESSAGE
+  if (form.title.trim().length > MAX_LENGTH.title) {
+    return `タイトルは${MAX_LENGTH.title}文字までです`
+  }
+  if (form.description.trim().length > MAX_LENGTH.description) {
+    return `詳細は${MAX_LENGTH.description}文字までです`
+  }
+  if (form.requesterName.trim().length > MAX_LENGTH.requesterName) {
+    return `依頼者の名前は${MAX_LENGTH.requesterName}文字までです`
+  }
+  if (form.requesterExtension.trim().length > MAX_LENGTH.requesterExtension) {
+    return `内線番号は${MAX_LENGTH.requesterExtension}文字までです`
+  }
+  // 確認先は、「確認待ち」のときだけ送る（formToPatch）ので、そのときだけ調べる
+  if (form.status === '確認待ち' && form.confirmTo.trim().length > MAX_LENGTH.confirmTo) {
+    return `確認先は${MAX_LENGTH.confirmTo}文字までです`
+  }
+  if (form.checklist.some((item) => item.name.trim().length > MAX_LENGTH.checklistItem)) {
+    return `チェックリストの項目は、${MAX_LENGTH.checklistItem}文字までです`
+  }
   return null
 }
 

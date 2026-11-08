@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import {
+  apiErrorMessage,
   createRequest,
   deleteRequest,
   fetchConfirmTargets,
@@ -169,10 +170,13 @@ async function setArchived(archived: boolean) {
   try {
     await updateRequest(id, { archived })
     emit('saved')
-  } catch {
-    errorMessage.value = archived
-      ? 'アーカイブできませんでした。もう一度お試しください。'
-      : '元に戻せませんでした。もう一度お試しください。'
+  } catch (error) {
+    errorMessage.value = apiErrorMessage(
+      error,
+      archived
+        ? 'アーカイブできませんでした。もう一度お試しください。'
+        : '元に戻せませんでした。もう一度お試しください。',
+    )
   } finally {
     working.value = false
   }
@@ -187,9 +191,12 @@ async function doDelete() {
     await deleteRequest(id)
     confirmingDelete.value = false
     emit('saved')
-  } catch {
+  } catch (error) {
     confirmingDelete.value = false
-    errorMessage.value = '削除できませんでした。アーカイブ中の依頼だけ、削除できます。'
+    errorMessage.value = apiErrorMessage(
+      error,
+      '削除できませんでした。アーカイブ中の依頼だけ、削除できます。',
+    )
   } finally {
     working.value = false
   }
@@ -212,8 +219,11 @@ async function save() {
     if (id === null) await createRequest(body)
     else await updateRequest(id, body)
     emit('saved')
-  } catch {
-    errorMessage.value = '保存できませんでした。入力を確かめて、もう一度お試しください。'
+  } catch (error) {
+    errorMessage.value = apiErrorMessage(
+      error,
+      '保存できませんでした。入力を確かめて、もう一度お試しください。',
+    )
     // 新しい依頼者を登録したあとで失敗したとき、やり直すと「同じ名前」で止まらないよう、一覧を取り直す
     fetchRequesters()
       .then((list) => (requesters.value = list))
