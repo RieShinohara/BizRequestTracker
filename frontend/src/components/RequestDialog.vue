@@ -260,7 +260,7 @@ async function save() {
         <v-card-title v-if="isNew" class="pt-4">新しい依頼</v-card-title>
         <!-- 上の段：タイトル・ステータス・優先度 -->
         <v-card-item>
-          <v-row dense align="center">
+          <v-row density="compact" align="center">
             <v-col cols="12" md="7">
               <v-text-field v-model="form.title" hide-details data-testid="title">
                 <template #label>
@@ -295,7 +295,7 @@ async function save() {
             <!-- 左側：依頼の情報 -->
             <v-col cols="12" md="7">
               <v-textarea v-model="form.description" label="詳細" rows="3" auto-grow />
-              <v-row dense>
+              <v-row density="compact">
                 <v-col cols="12" sm="7">
                   <v-combobox
                     :model-value="form.requesterName"
@@ -320,7 +320,7 @@ async function save() {
                   />
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row density="compact">
                 <v-col cols="12" sm="6">
                   <v-select v-model="form.categoryId" :items="categoryItems" label="カテゴリー" />
                 </v-col>
@@ -335,7 +335,7 @@ async function save() {
                   />
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row density="compact">
                 <v-col cols="12" sm="6">
                   <v-text-field v-model="form.receivedOn" type="date" label="受付日" />
                 </v-col>
