@@ -10,7 +10,7 @@
 - 技術：バックエンドは Python + FastAPI（SQLAlchemy + Alembic、uv）、DBは MySQL、画面は Vue 3（TypeScript）+ Vuetify。ドラッグ＆ドロップは vue-draggable-plus など。画面のビルドツールは Vite（スクールのメンターに使ってよいと確認済み）。詳しい決定と1本目との比較は [docs/tech-stack.md](docs/tech-stack.md)
 - **課題の条件：TaskManagement から、言語とフレームワークと DB を変える**（メンターに確認済み：Java・Spring Boot と React を変えればよい。DB は PostgreSQL 以外）。TypeScript、Vite は同じでよい。Git・GitHub・GitHub Actions・Terraform・AWS は、作業用の道具なので同じでよい。技術を選ぶときは、[docs/tech-stack.md](docs/tech-stack.md) の比較表で確認する
 - デプロイ先：AWS（EC2 ＋ RDS。**Terraform の構成は、1本目と同じ**）。DB は RDS が対応するものから選ぶ（SQLite は RDS 非対応のため使わない）。デプロイ中に画面録画をして、終わったら `destroy` する
-- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）は完了（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件・ユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）、画面のプロトタイプ（`prototype/`）、API 設計（[docs/api-design.md](docs/api-design.md)）は完了。バックエンドの骨組み（`backend/`：Python 3.13・uv・FastAPI・pytest・ruff、MySQL 8.4 は Docker）を作成。DB 接続とテーブル作成（SQLAlchemy・Alembic）も完了。依頼者・カテゴリー・テンプレート項目の API（9本）、依頼の追加・1件取得・更新・削除（4本）も完了。件数と確認先の候補（`summary`・`confirm-targets`）も完了（17本中15本）。期限の色（営業日の計算、`due_level`。祝日は jpholiday）も完了。依頼の一覧（検索・絞り込み・並び替え）と手動の並びの保存も完了し、**API は全17本が完成**。画面の骨組み（`frontend/`：Vue 3・TypeScript・Vuetify・Vite・Vitest・ESLint・Prettier。API につながる確認画面）も作成。一覧と件数の表示（`GET /api/requests`・`/api/summary`。表示のみ）も完了。検索・絞り込み・並び替えの画面も完了。一覧からのステータス変更と確認先の入力も完了。詳細モーダルの表示と編集も完了。依頼の追加、チェックリストの編集、アーカイブと削除、ドラッグ（手動の並びの保存）も完了し、**画面の機能は一通りそろった**。見た目の調整（文字色・フォント・「必須」の色）も完了。品質チェックの点検（[docs/quality-review.md](docs/quality-review.md)）も実施し、指摘の判断待ち。初期データの7カテゴリーと各テンプレートは、マイグレーション 0002 で入れる（D1 は対応済み）。カテゴリー管理とテンプレート編集の画面（UC-10・UC-9）も完了（D2 は対応済み）。指摘の対応は一通り完了し、CI（GitHub Actions）も作成した。次は、CI の必須チェックの設定、道具の追加（画面の部品のテスト・アクセシビリティの自動検査・カバレッジ）、デプロイ
+- 状況：要件定義書（[docs/requirements.md](docs/requirements.md)）は完了（機能一覧・画面設計・非機能要件・技術スタック・受け入れ条件・ユースケース）。データ設計（[docs/data-model.md](docs/data-model.md)）、画面のプロトタイプ（`prototype/`）、API 設計（[docs/api-design.md](docs/api-design.md)）は完了。バックエンドの骨組み（`backend/`：Python 3.13・uv・FastAPI・pytest・ruff、MySQL 8.4 は Docker）を作成。DB 接続とテーブル作成（SQLAlchemy・Alembic）も完了。依頼者・カテゴリー・テンプレート項目の API（9本）、依頼の追加・1件取得・更新・削除（4本）も完了。件数と確認先の候補（`summary`・`confirm-targets`）も完了（17本中15本）。期限の色（営業日の計算、`due_level`。祝日は jpholiday）も完了。依頼の一覧（検索・絞り込み・並び替え）と手動の並びの保存も完了し、**API は全17本が完成**。画面の骨組み（`frontend/`：Vue 3・TypeScript・Vuetify・Vite・Vitest・ESLint・Prettier。API につながる確認画面）も作成。一覧と件数の表示（`GET /api/requests`・`/api/summary`。表示のみ）も完了。検索・絞り込み・並び替えの画面も完了。一覧からのステータス変更と確認先の入力も完了。詳細モーダルの表示と編集も完了。依頼の追加、チェックリストの編集、アーカイブと削除、ドラッグ（手動の並びの保存）も完了し、**画面の機能は一通りそろった**。見た目の調整（文字色・フォント・「必須」の色）も完了。品質チェックの点検（[docs/quality-review.md](docs/quality-review.md)）も実施し、指摘の判断待ち。初期データの7カテゴリーと各テンプレートは、マイグレーション 0002 で入れる（D1 は対応済み）。カテゴリー管理とテンプレート編集の画面（UC-10・UC-9）も完了（D2 は対応済み）。指摘の対応は一通り完了し、CI（GitHub Actions）も作成した。次は、道具の追加（画面の部品のテスト・アクセシビリティの自動検査・カバレッジ）、デプロイ。`main` ブランチの保護と、CI の必須チェックは、設定済み（3.7）
 - 構成（予定）：`docs/`（要件定義）、`backend/`、`frontend/`、`terraform/`、`prototype/`（使い捨ての試作）、`notes/`（学習ノート）
 
 ## 2. ユーザーへの接し方
@@ -74,8 +74,15 @@
 
 ### 3.7 GitHub側の設定
 - マージしたら、PRのブランチを自動で削除する設定を、有効にした（2026-11-03）
-- `main` ブランチの保護（直接push禁止・PR必須・強制push禁止）は、**まだ設定していない**。設定する前に、ユーザーと相談する
-- CI（GitHub Actions）：2026-11-08 に作成（`.github/workflows/ci.yml`。`backend（pytest・ruff）` と `frontend（lint・test・build）` の2つのジョブ。PR と main への push で動く）。**必須チェックにする設定は、CI の動作を確かめたあと、別の Issue で行う**（ユーザーと決定）。決まったら、ここに書く。**ジョブの `name` を変えると、必須チェックが見つからなくなる**ので、変えるときは、GitHub 側の設定も直す
+- CI（GitHub Actions）：2026-11-08 に作成（`.github/workflows/ci.yml`。`backend（pytest・ruff）` と `frontend（lint・test・build）` の2つのジョブ。PR と main への push で動く）
+- **`main` ブランチの保護と、CI の必須チェックを、設定した（2026-11-08。Issue #115。ユーザーが承認）**：
+  - PR が必須（`main` への直接の push は、できない。承認の人数は 0＝1人開発のため、他の人の承認は要らない）
+  - **`backend（pytest・ruff）` と `frontend（lint・test・build）` が、どちらも成功しないと、マージできない**
+  - **管理者（ユーザー本人）にも適用する**。強制 push と、`main` の削除は、禁止
+  - 入れていない設定：「ブランチを最新にしないとマージできない」（1人開発では、面倒が増えるだけ）
+  - **設定前の状態は「保護なし」**。**戻し方**：`gh api -X DELETE repos/RieShinohara/BizRequestTracker/branches/main/protection`（CI 自体が壊れて、マージが止まったときの、一時的な対処。外したら、直してから、同じ設定に戻す）。設定の内容は、`gh api repos/RieShinohara/BizRequestTracker/branches/main/protection` で、読める
+  - **`ci.yml` のジョブの `name` を変えると、必須チェックが「見つからない」状態になり、永遠に待つ**。変えるときは、GitHub 側の設定も、同時に直す
+  - CI が ✗ のときは、直してから、ユーザーに確認を頼む（✗ のままでは、ユーザーも、マージできない）
 
 ### 3.8 見た目の調整のやり方
 - 色・濃さ・大きさなど、**見た目の調整は、先に Issue を作る**
