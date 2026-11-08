@@ -7,7 +7,8 @@ import TemplateDialog from './TemplateDialog.vue'
 
 // open＝開いているか。変更（追加・名前の変更・削除）に成功したら、changed を伝える（親が、一覧などを取り直す）
 const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ close: []; changed: [] }>()
+// closed＝モーダルが、閉じ終わった（親が、Tab の位置を、開いたボタンへ戻すため）
+const emit = defineEmits<{ close: []; changed: []; closed: [] }>()
 
 const categories = ref<CategoryWithCount[]>([])
 const loading = ref(false)
@@ -122,6 +123,7 @@ async function onDelete() {
     :model-value="open"
     max-width="560"
     scrollable
+    @after-leave="emit('closed')"
     @update:model-value="(value: boolean) => !value && emit('close')"
   >
     <v-card title="カテゴリー管理" data-testid="category-dialog">

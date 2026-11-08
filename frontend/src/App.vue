@@ -111,6 +111,44 @@ async function onReorder(moved: RequestRow[]) {
 
 // 詳細モーダルの状態：開いている依頼の番号（閉じているときは null）、新しい依頼を作っているか
 const openRequestId = ref<number | null>(null)
+
+// モーダルを開いたときに、Tab の位置にあったボタンを覚えておき、モーダルが閉じ終わったら、そこへ戻す。
+// 戻さないと、キーボードで操作している人は、閉じるたびに、ページの先頭からやり直しになる
+let opener: HTMLElement | null = null
+let openerByKeyboard = false // 開いたとき、そのボタンは、キーボード（Tab）で止まっていたか
+function rememberOpener() {
+  const active = document.activeElement
+  opener = active instanceof HTMLElement && active !== document.body ? active : null
+  openerByKeyboard = opener?.matches(':focus-visible') ?? false
+}
+function restoreFocus() {
+  const target = opener
+  const byKeyboard = openerByKeyboard
+  opener = null
+  if (!target?.isConnected) return
+  // focusVisible は、枠を出す・出さないの指定（対応していないブラウザでは、無視される）。
+  // Tab で止まっていたときだけ、枠を出す（マウスで開いたときは、出さない）
+  target.focus({ focusVisible: byKeyboard } as Parameters<HTMLElement['focus']>[0])
+  // 閉じるボタンを、マウスで押したときは、ブラウザが枠を出さない。Tab で来ていた人には、枠が見えたほうが
+  // 親切なので、キーボードで止まっていたときだけ、枠の見た目（.restored-focus）を、一時的に付ける
+  if (byKeyboard) {
+    target.classList.add('restored-focus')
+    target.addEventListener('blur', () => target.classList.remove('restored-focus'), { once: true })
+  }
+}
+
+function openDetail(id: number) {
+  rememberOpener()
+  openRequestId.value = id
+}
+function startCreating() {
+  rememberOpener()
+  creating.value = true
+}
+function startManagingCategories() {
+  rememberOpener()
+  managingCategories.value = true
+}
 const creating = ref(false)
 
 function closeDialog() {
@@ -168,7 +206,7 @@ onUnmounted(() => clearTimeout(searchTimer))
                 prepend-icon="mdi-plus"
                 class="mr-4"
                 data-testid="new-request"
-                @click="creating = true"
+                @click="startCreating"
               >
                 新しい依頼
               </v-btn>
@@ -184,7 +222,7 @@ onUnmounted(() => clearTimeout(searchTimer))
                 prepend-icon="mdi-tag-multiple-outline"
                 class="ml-2"
                 data-testid="manage-categories"
-                @click="managingCategories = true"
+                @click="startManagingCategories"
               >
                 カテゴリー管理
               </v-btn>
@@ -214,7 +252,7 @@ onUnmounted(() => clearTimeout(searchTimer))
             :filtered="hasActiveFilter(query)"
             :drag-disabled-reason="dragReason"
             @change-status="changeStatus"
-            @open="openRequestId = $event"
+            @open="openDetail"
             @reorder="onReorder"
           />
         </v-card>
@@ -225,11 +263,13 @@ onUnmounted(() => clearTimeout(searchTimer))
       :is-new="creating"
       :categories="categories"
       @close="closeDialog"
+      @closed="restoreFocus"
       @saved="onSaved"
     />
     <CategoryDialog
       :open="managingCategories"
       @close="managingCategories = false"
+      @closed="restoreFocus"
       @changed="onCategoriesChanged"
     />
     <v-snackbar v-model="noticeOpen" color="error" :timeout="5000" data-testid="notice">

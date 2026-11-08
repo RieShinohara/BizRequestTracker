@@ -13,3 +13,12 @@
   font-family:
     'Noto Sans JP Variable', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif !important;
 }
+
+/*
+ * モーダルを閉じたあと、Tab の位置を戻したボタンに出す枠（App.vue の restoreFocus が付ける）。
+ * Tab で止まったときの枠（:focus-visible）と、同じ見た目。マウスで閉じたときは、ブラウザが枠を出さないため。
+ */
+.restored-focus {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
