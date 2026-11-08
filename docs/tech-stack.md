@@ -46,6 +46,7 @@
 | ドラッグ＆ドロップ | vue-draggable-plus | |
 | 画面のビルド | Vite | |
 | 画面のテスト・静的チェック・整形 | Vitest、ESLint、Prettier | |
+| アクセシビリティの自動検査 | axe-core 4.14.0 | 2026-11-08 に追加（版は固定。公開から2週間以上たったもの）。部品のテストの中で、画面を検査する。色のコントラストなどは、jsdom では検査できない |
 | 画面の部品のテスト | @vue/test-utils、jsdom | 2026-11-08 に追加。Vue の部品を、テストの中で描いて、操作を再現する。jsdom は、ブラウザの代わり |
 | 画面のパッケージ管理 | npm | Windows の PowerShell では `npm.cmd` で実行する |
 | 作業用の道具 | Git ＋ GitHub、GitHub Actions、Terraform、AWS（EC2 ＋ RDS） | |
