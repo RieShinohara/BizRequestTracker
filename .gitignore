@@ -24,6 +24,10 @@ terraform.tfvars
 __pycache__/
 *.pyc
 .pytest_cache/
+# カバレッジの記録とレポート（uv run pytest --cov で作られる）
+.coverage
+.coverage.*
+htmlcov/
 .ruff_cache/
 
 # Node

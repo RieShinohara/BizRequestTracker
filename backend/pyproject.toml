@@ -16,8 +16,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "coverage==7.17.0",
     "httpx2>=2.16.0",
     "pytest>=9.2.0",
+    "pytest-cov==7.1.0",
     "ruff>=0.17.4",
 ]
 
@@ -34,3 +36,23 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI の書き方（引数の初期値に Depends(...)）は、警告の対象外にする
 extend-immutable-calls = ["fastapi.Depends"]
+
+# カバレッジ（テストが、コードのどの行・分岐まで通ったか）。測るとき：uv run pytest --cov
+# ふだんの uv run pytest には、付けない（速さと、これまでの動きを保つため）
+[tool.coverage.run]
+# 測る対象：アプリのコード（app/）だけ。テスト自身と、マイグレーション（表を作る記録）は、測らない
+source = ["app"]
+# 行だけでなく、if の「はい」「いいえ」の両方を通ったか（分岐）も測る
+branch = true
+
+[tool.coverage.report]
+# 通らなかった行の番号を、表に出す
+show_missing = true
+# 中身が空のファイル（__init__.py など）は、表に出さない
+skip_empty = true
+# 100% のファイルも、省かずに、すべて出す
+skip_covered = false
+# しきい値（これを下回ると、失敗する）。測った数字（2026-11-08：全体 99%）より、少し下に置く。
+# テストを書かずにコードを増やすと、割合が下がり、CI が気づかせてくれる。ぴったりにすると、小さな変更でも失敗して、
+# うるさいので、余裕を持たせた。100% は、目指さない（意味のないテストを増やさない）
+fail_under = 95
