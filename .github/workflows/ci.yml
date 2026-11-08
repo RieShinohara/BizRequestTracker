@@ -1,0 +1,92 @@
+# PR のたびに（と、main に入ったあとにも）、テストと静的チェックを自動で走らせる。
+# 手元でやっている確認（CLAUDE.md の 5「開発のコマンド」）と、同じものを、GitHub の上で行う。
+#   backend  : pytest（MySQL を、CI の中で起動する）、ruff check、ruff format --check
+#   frontend : lint、format:check、test、build
+# 使う部品（uses）は、版の名前ではなく、コミットの ID で固定している（後ろのコメントが、版の名前）。
+# 差し替えられた部品を、知らずに使ってしまうのを防ぐため。
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# 読むだけの権限にする（書き込みや、秘密情報は使わない）
+permissions:
+  contents: read
+
+# 同じ PR に続けて push したときは、古い実行を止める
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# 実行環境（OS）は、Ubuntu 24.04 に固定している。ubuntu-latest は、気づかないうちに新しい版に切り替わり、
+# CI が失敗することがあるため。上げるときは、確かめてから、ここを書き換える。
+# ジョブの name を変えると、「必須チェック」の設定（GitHub 側）が、見つからない状態になる。変えるときは、設定も直す。
+
+jobs:
+  backend:
+    name: backend（pytest・ruff）
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # アプリとテストが読む設定（ふだんは、リポジトリ直下の .env にある）。CI には .env がないので、ここで渡す。
+      # テストが使う DB は、テストの中で作って、終わると消す使い捨て。値は、CI 専用のダミーでよい（本物の秘密ではない）
+      MYSQL_ROOT_PASSWORD: ci-dummy-root-password
+      MYSQL_DATABASE: biz_request_tracker
+      MYSQL_USER: biz_user
+      MYSQL_PASSWORD: ci-dummy-password
+      MYSQL_PORT: '3306'
+    services:
+      # テスト用の MySQL。手元の docker-compose.yml と同じ版（8.4）。この CI の中だけで動き、終わると消える
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-dummy-root-password
+        ports:
+          - 3306:3306
+        # MySQL が、つながる状態になるまで待つ（起動に、数十秒かかる）
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          # 部品のキャッシュ（uv.lock が変わらなければ、次から速い）
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      # uv.lock のとおりに入れる（lock とずれていたら失敗する）。Python の版は、.python-version（3.13）
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      # 整形が、そろっているか。ずれていたら、手元で uv run ruff format . を実行して直す
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  frontend:
+    name: frontend（lint・test・build）
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # package-lock.json のとおりに入れる（版が勝手に変わらない）
+      - run: npm ci
+      - run: npm run lint
+      # 整形（Prettier）が、そろっているか。ずれていたら、手元で、触ったファイルを npx prettier --write で直す
+      - run: npm run format:check
+      - run: npm run test
+      - run: npm run build
