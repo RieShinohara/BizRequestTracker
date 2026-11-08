@@ -111,7 +111,7 @@
 点検の PR には入れない。**入れる方針で決定**（2026-11-08）。中身と順番は、別の Issue で相談する。
 | 候補 | 内容 | 関連する指摘 |
 |---|---|---|
-| CI（GitHub Actions） | PR のたびに、テスト・ruff・lint・整形・ビルドを自動で走らせる。必須チェックにするかも相談（`CLAUDE.md` 3.7） | F9（先に直す） |
+| CI（GitHub Actions） | PR のたびに、テスト・ruff・lint・整形・ビルドを自動で走らせる。**作成済み（Issue #113、PR #114）。backend・frontend の2ジョブが成功することを、PR の上で確かめた**。必須チェックにする設定は、別の Issue で（`CLAUDE.md` 3.7） | F9（直した） |
 | 画面の部品のテスト | jsdom ＋ `@vue/test-utils` で、保存・ステータス変更などを守る | F4・F10 |
 | アクセシビリティの自動検査 | axe-core をテストで使う | F3 |
 | カバレッジ | バックエンド（`pytest-cov`）、画面（`@vitest/coverage-v8`） | B6 |
