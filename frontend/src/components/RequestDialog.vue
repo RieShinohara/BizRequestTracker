@@ -238,6 +238,7 @@ async function save() {
   <!-- 保存していない変更があるときは、枠の外を押す・Esc では閉じない（編集中の内容が、うっかり消えないように） -->
   <v-dialog
     :model-value="isOpen"
+    :aria-label="isNew ? '新しい依頼' : '依頼の詳細'"
     max-width="1000"
     scrollable
     :persistent="dirty"
@@ -377,6 +378,7 @@ async function save() {
                   <div class="d-flex align-center">
                     <v-checkbox
                       :model-value="item.done"
+                      :aria-label="item.name"
                       hide-details
                       density="compact"
                       @update:model-value="onToggleItem(index, $event)"
@@ -487,7 +489,7 @@ async function save() {
   </v-dialog>
 
   <!-- 完全な削除の確認 -->
-  <v-dialog v-model="confirmingDelete" max-width="420">
+  <v-dialog v-model="confirmingDelete" max-width="420" aria-label="完全に削除しますか？">
     <v-card title="完全に削除しますか？">
       <v-card-text>
         「{{ detail?.title }}」を完全に削除します。チェックリストも一緒に消えます。

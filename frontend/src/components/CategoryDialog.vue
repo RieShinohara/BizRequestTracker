@@ -127,6 +127,7 @@ async function onDelete() {
 <template>
   <v-dialog
     :model-value="open"
+    aria-label="カテゴリー管理"
     max-width="560"
     scrollable
     @after-leave="emit('closed')"
@@ -256,7 +257,12 @@ async function onDelete() {
   <TemplateDialog :category="templateTarget" @close="templateTarget = null" />
 
   <!-- 削除の確認 -->
-  <v-dialog :model-value="deleting !== null" max-width="420" @update:model-value="deleting = null">
+  <v-dialog
+    :model-value="deleting !== null"
+    max-width="420"
+    aria-label="カテゴリーを削除しますか？"
+    @update:model-value="deleting = null"
+  >
     <v-card title="カテゴリーを削除しますか？">
       <v-card-text>
         「{{ deleting?.name }}」を削除します。このカテゴリーのテンプレートも一緒に消えます。

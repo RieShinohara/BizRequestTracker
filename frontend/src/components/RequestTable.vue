@@ -73,7 +73,7 @@ function finishConfirm(confirmTo: string) {
   <v-table hover>
     <thead>
       <tr>
-        <th style="width: 40px"></th>
+        <th style="width: 40px"><span class="visually-hidden">並びを変える取っ手</span></th>
         <th style="width: 80px">優先度</th>
         <th>タイトル</th>
         <th style="width: 150px">カテゴリー</th>
@@ -140,6 +140,8 @@ function finishConfirm(confirmTo: string) {
             <template #activator="{ props: menuProps }">
               <v-chip
                 v-bind="menuProps"
+                role="button"
+                :aria-label="`ステータス：${row.status}（押して変更）`"
                 :color="STATUS_COLOR[row.status]"
                 size="small"
                 append-icon="mdi-menu-down"
