@@ -67,7 +67,9 @@ jobs:
       - run: uv run ruff check .
       # 整形が、そろっているか。ずれていたら、手元で uv run ruff format . を実行して直す
       - run: uv run ruff format --check .
-      - run: uv run pytest
+      # テストと同時に、カバレッジ（どこまで通ったか）を測る。しきい値を下回ると、失敗する（backend/pyproject.toml）。
+      # テストは1回だけ動かす（uv run pytest を、置き換えている）
+      - run: uv run pytest --cov
 
   frontend:
     name: frontend（lint・test・build）
