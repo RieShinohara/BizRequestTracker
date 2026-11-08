@@ -65,7 +65,7 @@
 ### 2.4 公開リポジトリとしての確認（P）
 | ID | 重大度 | 確かめ方 | 場所 | 指摘 | 推奨 | 判断 |
 |---|---|---|---|---|---|---|
-| P1 | 中 | 読んだ（要確認） | `frontend/public/favicon.svg`、`prototype/public/favicon.svg`、`prototype/public/icons.svg`、`CREDITS.md` | `CREDITS.md` は「画像：使っていない」と書いているが、実際は、ブラウザのタブのアイコン（`favicon.svg`）を使っている。この画像は、Vite のひな形に付いてくる、紫の稲妻のロゴと思われる（見た目と、画面の骨組みを作ったコミットで入ったことからの推測）。`prototype/public/icons.svg` も同じひな形由来と思われ、**GitHub・Discord などの他社のロゴ**を含む。こちらは、どこからも参照されていない | 出典とライセンスを確かめて `CREDITS.md` に書く、または**自作のアイコンに差し替える**。`icons.svg` は、使っていないので削除する | **直す**（自作のアイコンに差し替え、`icons.svg` は削除） |
+| P1 | 中 | 読んだ（要確認） | `frontend/public/favicon.svg`、`prototype/public/favicon.svg`、`prototype/public/icons.svg`、`CREDITS.md` | `CREDITS.md` は「画像：使っていない」と書いているが、実際は、ブラウザのタブのアイコン（`favicon.svg`）を使っている。この画像は、Vite のひな形に付いてくる、紫の稲妻のロゴと思われる（見た目と、画面の骨組みを作ったコミットで入ったことからの推測）。`prototype/public/icons.svg` も同じひな形由来と思われ、**GitHub・Discord などの他社のロゴ**を含む。こちらは、どこからも参照されていない | 出典とライセンスを確かめて `CREDITS.md` に書く、または**自作のアイコンに差し替える**。`icons.svg` は、使っていないので削除する | **直す**（自作のアイコンに差し替え、`icons.svg` は削除）。**対応済み（Issue #105）。自作のチェックマークのアイコンに差し替え、`prototype/public/icons.svg` は削除、`CREDITS.md` も更新** |
 
 確認して**問題がなかった**こと：
 - パスワード・キー・個人情報：追跡しているファイルに、`.env`・`*.sql`・`*.dump`・`.claude/settings*.json` などは**ない**。Git の履歴にも、実際のパスワードは**ない**（`.env.example` の `change-me` だけ）。コードに書き込まれた秘密もない
