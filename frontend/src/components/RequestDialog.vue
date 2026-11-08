@@ -14,6 +14,7 @@ import {
   detailToForm,
   emptyForm,
   formToPatch,
+  isFormChanged,
   resolveRequesterId,
   todayIso,
   validateForm,
@@ -28,6 +29,7 @@ const emit = defineEmits<{ close: []; saved: [] }>()
 
 const detail = ref<RequestDetail | null>(null)
 const form = ref<RequestForm | null>(null)
+const original = ref<RequestForm | null>(null) // 開いたときの内容（変更の有無を調べるための写し）
 const requesters = ref<Requester[]>([])
 const confirmTargets = ref<string[]>([])
 const loading = ref(false)
@@ -41,6 +43,13 @@ const templateLoading = ref(false)
 // 完全な削除の確認を出しているか、アーカイブ・削除の通信中か
 const confirmingDelete = ref(false)
 const working = ref(false)
+// 保存していない変更があるか（「項目を足す」に書きかけの文字も含める）
+const dirty = computed(
+  () =>
+    form.value !== null &&
+    original.value !== null &&
+    (isFormChanged(original.value, form.value) || !!newItemName.value.trim()),
+)
 const requesterNames = computed(() => requesters.value.map((requester) => requester.name))
 const categoryItems = computed(() =>
   props.categories.map((category) => ({ title: category.name, value: category.id })),
@@ -56,6 +65,7 @@ watch(
     const myCount = ++openCount
     detail.value = null
     form.value = null
+    original.value = null
     errorMessage.value = ''
     newItemName.value = ''
     confirmingDelete.value = false
@@ -73,9 +83,11 @@ watch(
       ])
       if (myCount !== openCount) return
       detail.value = loaded
-      form.value = loaded
-        ? detailToForm(loaded)
-        : emptyForm(props.categories[0]?.id ?? null, todayIso())
+      const today = todayIso()
+      const makeForm = () =>
+        loaded ? detailToForm(loaded) : emptyForm(props.categories[0]?.id ?? null, today)
+      form.value = makeForm()
+      original.value = makeForm() // 画面で直す入力欄とは別の、開いたときの写し
       requesters.value = requesterList
       confirmTargets.value = targets
     } catch {
@@ -212,10 +224,12 @@ async function save() {
 </script>
 
 <template>
+  <!-- 保存していない変更があるときは、枠の外を押す・Esc では閉じない（編集中の内容が、うっかり消えないように） -->
   <v-dialog
     :model-value="isOpen"
     max-width="1000"
     scrollable
+    :persistent="dirty"
     @update:model-value="(value: boolean) => !value && emit('close')"
   >
     <v-card>
@@ -438,7 +452,16 @@ async function save() {
             </template>
           </template>
           <v-spacer />
-          <v-btn @click="emit('close')">閉じる</v-btn>
+          <span
+            v-if="dirty"
+            class="text-caption text-medium-emphasis mr-2"
+            data-testid="dirty-note"
+          >
+            保存していない変更があります
+          </span>
+          <v-btn :color="dirty ? 'error' : undefined" data-testid="close" @click="emit('close')">
+            {{ dirty ? '変更を捨てて閉じる' : '閉じる' }}
+          </v-btn>
           <v-btn color="primary" variant="flat" :loading="saving" data-testid="save" @click="save">
             保存
           </v-btn>

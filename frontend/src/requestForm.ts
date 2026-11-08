@@ -126,3 +126,21 @@ export function emptyForm(firstCategoryId: number | null, today: string): Reques
     checklist: [],
   }
 }
+
+/**
+ * 入力内容が、開いたときから変わっているか（保存していない変更があるか）。
+ * 文字は、前後の空白を除いて比べる（空白だけの違いは、変更と見なさない）。チェックリストは、項目の名前・チェック・順番を比べる。
+ */
+export function isFormChanged(original: RequestForm, current: RequestForm): boolean {
+  const textFields = [
+    'title',
+    'description',
+    'requesterName',
+    'requesterExtension',
+    'confirmTo',
+  ] as const
+  if (textFields.some((key) => original[key].trim() !== current[key].trim())) return true
+  const plainFields = ['status', 'priority', 'categoryId', 'receivedOn', 'dueOn', 'qms'] as const
+  if (plainFields.some((key) => original[key] !== current[key])) return true
+  return !sameChecklist(original.checklist, current.checklist)
+}
