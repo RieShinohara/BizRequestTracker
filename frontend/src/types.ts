@@ -45,6 +45,11 @@ export interface Category {
   name: string
 }
 
+/** カテゴリー管理で使う形。request_count＝そのカテゴリーを使っている依頼の数（削除できるかの目安） */
+export interface CategoryWithCount extends Category {
+  request_count: number
+}
+
 /** 依頼の更新で送る項目（PATCH /api/requests/{id}）。送った項目だけが変わる */
 export interface RequestPatch {
   title?: string

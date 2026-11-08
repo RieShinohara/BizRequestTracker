@@ -8,6 +8,8 @@ import {
   statusChangeToPatch,
   updateRequest,
 } from './api'
+import { hasCategory } from './categoryManage'
+import CategoryDialog from './components/CategoryDialog.vue'
 import RequestDialog from './components/RequestDialog.vue'
 import RequestFilters from './components/RequestFilters.vue'
 import RequestTable from './components/RequestTable.vue'
@@ -127,6 +129,17 @@ async function onSaved() {
   await reload()
 }
 
+// カテゴリー管理のモーダル。カテゴリーが変わったら、選択肢（件数つきの一覧）と、一覧の依頼（カテゴリー名）を取り直す。
+// 削除したカテゴリーで絞り込んだままだと、何も出なくなるので、その絞り込みは外す
+const managingCategories = ref(false)
+
+async function onCategoriesChanged() {
+  await reload()
+  if (query.value.categoryId !== null && !hasCategory(categories.value, query.value.categoryId)) {
+    query.value = { ...query.value, categoryId: null }
+  }
+}
+
 // 条件が変わったら、取り直す。検索の文字は、入力が止まってから（打つたびに API を呼ばない）
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 watch(query, (now, before) => {
@@ -166,6 +179,15 @@ onUnmounted(() => clearTimeout(searchTimer))
                 density="compact"
                 @update:model-value="query = { ...query, includeArchived: !!$event }"
               />
+              <v-btn
+                variant="text"
+                prepend-icon="mdi-tag-multiple-outline"
+                class="ml-2"
+                data-testid="manage-categories"
+                @click="managingCategories = true"
+              >
+                カテゴリー管理
+              </v-btn>
               <v-spacer />
               <span class="text-caption text-medium-emphasis">
                 期限日の色：<span class="text-red-darken-2 font-weight-bold">赤＝期限切れ</span> /
@@ -204,6 +226,11 @@ onUnmounted(() => clearTimeout(searchTimer))
       :categories="categories"
       @close="closeDialog"
       @saved="onSaved"
+    />
+    <CategoryDialog
+      :open="managingCategories"
+      @close="managingCategories = false"
+      @changed="onCategoriesChanged"
     />
     <v-snackbar v-model="noticeOpen" color="error" :timeout="5000" data-testid="notice">
       {{ notice }}

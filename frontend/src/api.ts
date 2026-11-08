@@ -1,6 +1,6 @@
 /** API を呼ぶ部品。画面からは、ここを通して API を呼ぶ。 */
 import type {
-  Category,
+  CategoryWithCount,
   RequestPatch,
   RequestQuery,
   RequestDetail,
@@ -54,9 +54,70 @@ export function fetchRequests(query: Partial<RequestQuery> = {}): Promise<Reques
   return getJson<RequestRow[]>(buildRequestsUrl(query))
 }
 
-/** 業務カテゴリーの一覧（GET /api/categories） */
-export function fetchCategories(): Promise<Category[]> {
-  return getJson<Category[]>('/api/categories')
+/** 業務カテゴリーの一覧（GET /api/categories）。使っている依頼の数（request_count）つき */
+export function fetchCategories(): Promise<CategoryWithCount[]> {
+  return getJson<CategoryWithCount[]>('/api/categories')
+}
+
+/**
+ * API のエラー。status＝HTTP の番号、detail＝API が返した理由（日本語。{"detail": "..."} の中身）。
+ * 理由が読み取れないとき（つながらない、JSON でない、など）は、detail は null。
+ */
+export class ApiError extends Error {
+  status: number
+  detail: string | null
+
+  constructor(status: number, detail: string | null, message: string) {
+    super(message)
+    this.status = status
+    this.detail = detail
+  }
+}
+
+/** 失敗した返事から、ApiError を作る（理由が、文字で読み取れたときだけ detail に入れる） */
+async function toApiError(response: Response, label: string): Promise<ApiError> {
+  let detail: string | null = null
+  try {
+    const body: { detail?: unknown } = await response.json()
+    if (typeof body.detail === 'string') detail = body.detail
+  } catch {
+    // 返事が JSON でなくても、番号だけで ApiError にする
+  }
+  return new ApiError(
+    response.status,
+    detail,
+    `API がエラーを返しました（${response.status}）：${label}`,
+  )
+}
+
+/** 本文つきで送り、失敗したら、理由つきの ApiError を投げる。成功したら、返ってきた JSON（なければ null） */
+async function sendWithDetail<T>(
+  method: 'POST' | 'PATCH' | 'DELETE',
+  url: string,
+  body?: unknown,
+): Promise<T | null> {
+  const response = await fetch(url, {
+    method,
+    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (!response.ok) throw await toApiError(response, `${method} ${url}`)
+  return response.status === 204 ? null : ((await response.json()) as T)
+}
+
+/** カテゴリーの追加（POST /api/categories）。同じ名前があると、409 の ApiError */
+export async function createCategory(name: string): Promise<CategoryWithCount> {
+  return (await sendWithDetail<CategoryWithCount>('POST', '/api/categories', { name }))!
+}
+
+/** カテゴリーの名前の変更（PATCH /api/categories/{id}）。同じ名前があると、409 の ApiError */
+export async function renameCategory(id: number, name: string): Promise<CategoryWithCount> {
+  return (await sendWithDetail<CategoryWithCount>('PATCH', `/api/categories/${id}`, { name }))!
+}
+
+/** カテゴリーの削除（DELETE /api/categories/{id}）。依頼が使っていると、409 の ApiError */
+export async function deleteCategory(id: number): Promise<void> {
+  await sendWithDetail<never>('DELETE', `/api/categories/${id}`)
 }
 
 /** カテゴリーのテンプレートの項目名（GET /api/categories/{id}/template-items）。テンプレートの順番どおり */
