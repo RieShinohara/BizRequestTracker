@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useDraggable } from 'vue-draggable-plus'
-import { PRIORITY_COLOR, STATUS_COLOR, formatDate, progressText } from '../display'
+import { PRIORITY_COLOR, STATUS_COLOR, dueLevelLabel, formatDate, progressText } from '../display'
 import { moveItem } from '../order'
 import { STATUSES, type RequestRow, type Status, type StatusChange } from '../types'
 import ConfirmToDialog from './ConfirmToDialog.vue'
@@ -104,6 +104,10 @@ function finishConfirm(confirmTo: string) {
             :color="dragDisabledReason === null ? 'grey-darken-1' : 'grey-lighten-2'"
             data-testid="drag-handle"
           />
+          <!-- 読み上げソフト向けの説明。ドラッグは、マウスで行う操作 -->
+          <span class="visually-hidden">
+            {{ dragDisabledReason ?? '並びを変える取っ手（マウスで、ドラッグして動かします）' }}
+          </span>
         </td>
         <td>
           <v-chip :color="PRIORITY_COLOR[row.priority]" size="small" label>
@@ -112,7 +116,17 @@ function finishConfirm(confirmTo: string) {
         </td>
         <td>
           <div class="font-weight-medium">
-            {{ row.title }}
+            <!-- Tab キーで止まり、Enter で詳細を開けるボタン。見た目は、ふつうの文字と同じ。
+                 行のクリックでも開く（.stop は、行のクリックと二重に開かないため） -->
+            <button
+              type="button"
+              class="title-button"
+              aria-haspopup="dialog"
+              data-testid="open-request"
+              @click.stop="emit('open', row.id)"
+            >
+              {{ row.title }}
+            </button>
             <v-chip v-if="row.archived" size="x-small" class="ml-1" label>アーカイブ</v-chip>
           </div>
           <div v-if="progressText(row)" class="text-caption text-medium-emphasis">
@@ -166,8 +180,17 @@ function finishConfirm(confirmTo: string) {
           }"
         >
           {{ formatDate(row.due_on) }}
+          <!-- 色（赤・オレンジ）は、読み上げソフトに伝わらないので、文字でも伝える -->
+          <span v-if="row.due_level" class="visually-hidden">
+            （{{ dueLevelLabel(row.due_level) }}）
+          </span>
         </td>
-        <td><v-icon v-if="row.qms" icon="mdi-check-circle" color="primary" /></td>
+        <td>
+          <template v-if="row.qms">
+            <v-icon icon="mdi-check-circle" color="primary" />
+            <span class="visually-hidden">QMS チェックあり</span>
+          </template>
+        </td>
       </tr>
       <tr v-if="rows.length === 0">
         <td colspan="8" class="text-center text-medium-emphasis pa-6">
@@ -187,6 +210,31 @@ function finishConfirm(confirmTo: string) {
 </template>
 
 <style scoped>
+/* タイトルのボタン：ふつうの文字と同じ見た目。Tab で止まったときだけ、枠を出す */
+.title-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.title-button:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* 画面には出さず、読み上げソフトだけに伝える文字 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 .drag-handle {
   cursor: grab;
 }

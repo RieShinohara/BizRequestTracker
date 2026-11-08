@@ -25,7 +25,8 @@ import { PRIORITIES, STATUSES, type Category, type RequestDetail, type Requester
 // requestId＝直す依頼の番号、isNew＝新しい依頼を作る（どちらでもなければ、閉じている）
 const props = defineProps<{ requestId: number | null; isNew: boolean; categories: Category[] }>()
 const isOpen = computed(() => props.isNew || props.requestId !== null)
-const emit = defineEmits<{ close: []; saved: [] }>()
+// closed＝モーダルが、閉じ終わった（親が、Tab の位置を、開いたボタンへ戻すため）
+const emit = defineEmits<{ close: []; saved: []; closed: [] }>()
 
 const detail = ref<RequestDetail | null>(null)
 const form = ref<RequestForm | null>(null)
@@ -230,6 +231,7 @@ async function save() {
     max-width="1000"
     scrollable
     :persistent="dirty"
+    @after-leave="emit('closed')"
     @update:model-value="(value: boolean) => !value && emit('close')"
   >
     <v-card>

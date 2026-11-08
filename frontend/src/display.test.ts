@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, hasActiveFilter, progressText } from './display'
+import { dueLevelLabel, formatDate, hasActiveFilter, progressText } from './display'
 
 describe('formatDate', () => {
   it('月/日（曜日）の形にする', () => {
@@ -35,5 +35,16 @@ describe('hasActiveFilter', () => {
     expect(hasActiveFilter({ ...none, qms: true })).toBe(true)
     expect(hasActiveFilter({ ...none, categoryId: 0 })).toBe(true)
     expect(hasActiveFilter({ ...none, status: '完了' })).toBe(true)
+  })
+})
+
+describe('dueLevelLabel', () => {
+  it('期限切れ・3営業日以内を、文字にする', () => {
+    expect(dueLevelLabel('overdue')).toBe('期限切れ')
+    expect(dueLevelLabel('soon')).toBe('3営業日以内')
+  })
+
+  it('色なし（null）は、空', () => {
+    expect(dueLevelLabel(null)).toBe('')
   })
 })

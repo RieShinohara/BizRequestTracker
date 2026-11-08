@@ -34,6 +34,7 @@ AIエンジニア養成コースの学習記録です。Claude Codeと一緒に�
 | [27-frontend-category-manage.md](27-frontend-category-manage.md) | 画面のカテゴリー管理の記録。API の理由を画面に出す（`ApiError`）、204 は JSON を読まない、押せないボタンの理由、他の表示とのつじつま合わせ |
 | [28-frontend-template-edit.md](28-frontend-template-edit.md) | 画面のテンプレート編集の記録。コピーを直して「保存」でまとめて送る、変更があるときは閉じられない（`persistent`）、書きかけの文字も変更に数える、「今ある依頼は変わらない」を画面に書く |
 | [29-frontend-unsaved-changes.md](29-frontend-unsaved-changes.md) | 変更中にうっかり閉じない（詳細モーダル）の記録。開いたときの写しと比べて変更を決める、書きかけの文字も数える、`persistent` はユーザーの操作だけを止める |
+| [30-frontend-keyboard-a11y.md](30-frontend-keyboard-a11y.md) | 一覧をキーボードで操作できる・読み上げソフトに伝える記録。本物のボタンを使う、閉じたあと開いたボタンへ戻す、「戻っているのに枠が出ない」、画面から隠して読み上げだけに残す |
 
 ## 今後、追加する予定
 AWS へのデプロイ。（バックエンドは API 全17本、画面は一覧・検索・編集・追加・チェックリスト・アーカイブと削除・ドラッグまで完成）

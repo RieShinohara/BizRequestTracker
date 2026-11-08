@@ -1,5 +1,5 @@
 /** 表示のための決まり（色、日付の整形、進み具合の文字）。色は、ここの1か所にまとめる。 */
-import type { Priority, RequestQuery, RequestRow, SortKey, Status } from './types'
+import type { DueLevel, Priority, RequestQuery, RequestRow, SortKey, Status } from './types'
 
 export const STATUS_COLOR: Record<Status, string> = {
   未着手: 'grey',
@@ -42,4 +42,14 @@ export function formatDate(iso: string): string {
 export function progressText(row: Pick<RequestRow, 'checklist_done' | 'checklist_total'>): string {
   if (row.checklist_total === 0) return ''
   return `${row.checklist_done}/${row.checklist_total} 完了`
+}
+
+/**
+ * 期限の色を、読み上げソフト向けの文字にする。色（赤・オレンジ）は、見える人にしか伝わらないため。
+ * 色なし（null）のときは、空。
+ */
+export function dueLevelLabel(level: DueLevel): string {
+  if (level === 'overdue') return '期限切れ'
+  if (level === 'soon') return '3営業日以内'
+  return ''
 }
