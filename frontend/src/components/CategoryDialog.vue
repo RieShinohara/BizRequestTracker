@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { createCategory, deleteCategory, fetchCategories, renameCategory } from '../api'
 import { categoryErrorMessage, deleteBlockedReason, validateCategoryName } from '../categoryManage'
 import type { CategoryWithCount } from '../types'
+import TemplateDialog from './TemplateDialog.vue'
 
 // open＝開いているか。変更（追加・名前の変更・削除）に成功したら、changed を伝える（親が、一覧などを取り直す）
 const props = defineProps<{ open: boolean }>()
@@ -19,6 +20,8 @@ const editingId = ref<number | null>(null)
 const editName = ref('')
 // 削除の確認を出しているカテゴリー（なければ null）
 const deleting = ref<CategoryWithCount | null>(null)
+// テンプレートを編集しているカテゴリー（なければ null）
+const templateTarget = ref<CategoryWithCount | null>(null)
 
 async function load() {
   loading.value = true
@@ -40,6 +43,7 @@ watch(
     newName.value = ''
     editingId.value = null
     deleting.value = null
+    templateTarget.value = null
     load()
   },
   { immediate: true },
@@ -168,6 +172,17 @@ async function onDelete() {
               <span class="flex-grow-1" data-testid="category-name">{{ category.name }}</span>
               <v-chip size="x-small" label class="mr-2">依頼 {{ category.request_count }}件</v-chip>
               <v-btn
+                size="small"
+                variant="text"
+                prepend-icon="mdi-format-list-checks"
+                :disabled="working"
+                :aria-label="`${category.name}のテンプレートを編集`"
+                data-testid="category-template"
+                @click="templateTarget = category"
+              >
+                テンプレート
+              </v-btn>
+              <v-btn
                 icon="mdi-pencil-outline"
                 size="small"
                 variant="text"
@@ -228,6 +243,9 @@ async function onDelete() {
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <!-- テンプレートの編集 -->
+  <TemplateDialog :category="templateTarget" @close="templateTarget = null" />
 
   <!-- 削除の確認 -->
   <v-dialog :model-value="deleting !== null" max-width="420" @update:model-value="deleting = null">

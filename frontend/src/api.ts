@@ -92,7 +92,7 @@ async function toApiError(response: Response, label: string): Promise<ApiError> 
 
 /** 本文つきで送り、失敗したら、理由つきの ApiError を投げる。成功したら、返ってきた JSON（なければ null） */
 async function sendWithDetail<T>(
-  method: 'POST' | 'PATCH' | 'DELETE',
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   url: string,
   body?: unknown,
 ): Promise<T | null> {
@@ -113,6 +113,19 @@ export async function createCategory(name: string): Promise<CategoryWithCount> {
 /** カテゴリーの名前の変更（PATCH /api/categories/{id}）。同じ名前があると、409 の ApiError */
 export async function renameCategory(id: number, name: string): Promise<CategoryWithCount> {
   return (await sendWithDetail<CategoryWithCount>('PATCH', `/api/categories/${id}`, { name }))!
+}
+
+/**
+ * テンプレートの保存（PUT /api/categories/{id}/template-items）。送った一覧が、そのままテンプレートになる
+ * （追加・編集・削除を、一度に反映する）。順番は、送った順。失敗したら、理由つきの ApiError を投げる。
+ */
+export async function saveTemplateItems(categoryId: number, names: string[]): Promise<string[]> {
+  const items = await sendWithDetail<{ name: string }[]>(
+    'PUT',
+    `/api/categories/${categoryId}/template-items`,
+    { items: names.map((name) => ({ name })) },
+  )
+  return (items ?? []).map((item) => item.name)
 }
 
 /** カテゴリーの削除（DELETE /api/categories/{id}）。依頼が使っていると、409 の ApiError */
