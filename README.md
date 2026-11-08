@@ -30,6 +30,7 @@ npm install
 npm run dev     # http://localhost:5173 を開く（ポートは固定）
 npm run test    # テスト
 npm run lint    # 静的チェック
+npm run format:check   # 整形の確認（書き換えない）。直すときは npm run format
 npm run build   # 型チェックとビルド
 ```
 
@@ -38,7 +39,14 @@ npm run build   # 型チェックとビルド
 `prototype/` は、画面の見た目を確かめた使い捨ての試作（API にはつながない）。
 
 ## 文書
-- [要件定義](docs/requirements.md)
+- [要件定義](docs/requirements.md)（入口。機能一覧・ユースケース・画面設計・非機能要件・受け入れ条件へ）
+- [機能一覧](docs/functional-requirements.md)
+- [ユースケース](docs/use-cases.md)
+- [画面設計](docs/screen-design.md)
 - [データ設計](docs/data-model.md)
+- [API 設計](docs/api-design.md)
+- [非機能要件](docs/non-functional-requirements.md)
+- [技術スタック](docs/tech-stack.md)
+- [品質チェックの記録](docs/quality-review.md)
 - [画面のプロトタイプ](prototype/README.md)
 - [学習ノート](notes/README.md)
