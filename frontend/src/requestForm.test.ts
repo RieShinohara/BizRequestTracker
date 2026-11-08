@@ -5,6 +5,7 @@ import {
   emptyForm,
   detailToForm,
   formToPatch,
+  isFormChanged,
   resolveRequesterId,
   todayIso,
   validateForm,
@@ -271,5 +272,60 @@ describe('formToPatch のチェックリスト', () => {
     const f = detailToForm(withChecklist)
     f.checklist[0].done = true
     expect(withChecklist.checklist_items[0].done).toBe(false)
+  })
+})
+
+describe('isFormChanged', () => {
+  it('開いたままの内容（別に作った写し）は、変更なし', () => {
+    expect(isFormChanged(detailToForm(detail), detailToForm(detail))).toBe(false)
+    expect(isFormChanged(emptyForm(4, '2026-11-08'), emptyForm(4, '2026-11-08'))).toBe(false)
+  })
+
+  it('どの項目を変えても、変更あり', () => {
+    const original = detailToForm(detail)
+    const changes: Partial<RequestForm>[] = [
+      { title: '別のタイトル' },
+      { description: '詳細を足した' },
+      { requesterName: '（架空）佐藤' },
+      { requesterExtension: '9999' },
+      { confirmTo: '薬事部' },
+      { status: '完了' },
+      { priority: '低' },
+      { categoryId: 5 },
+      { receivedOn: '2026-11-02' },
+      { dueOn: '2026-11-11' },
+      { qms: false },
+      { checklist: [{ name: '書類A', done: false }] },
+    ]
+    for (const change of changes) {
+      expect(isFormChanged(original, form(change)), JSON.stringify(change)).toBe(true)
+    }
+  })
+
+  it('文字の前後の空白だけの違いは、変更と見なさない', () => {
+    const padded = `  ${detail.title} `
+    expect(isFormChanged(detailToForm(detail), form({ title: padded }))).toBe(false)
+  })
+
+  it('チェックリストは、チェックの付け外し・順番の入れ替えも、変更あり', () => {
+    const withItems = {
+      ...detail,
+      checklist_items: [
+        { name: '書類A', done: false },
+        { name: '書類B', done: false },
+      ],
+    }
+    const original = detailToForm(withItems)
+    const checked = detailToForm(withItems)
+    checked.checklist[0].done = true
+    expect(isFormChanged(original, checked)).toBe(true)
+    const swapped = detailToForm(withItems)
+    swapped.checklist.reverse()
+    expect(isFormChanged(original, swapped)).toBe(true)
+  })
+
+  it('新しい依頼は、何か入力すると変更あり', () => {
+    const original = emptyForm(4, '2026-11-08')
+    expect(isFormChanged(original, { ...emptyForm(4, '2026-11-08'), title: 'あ' })).toBe(true)
   })
 })
