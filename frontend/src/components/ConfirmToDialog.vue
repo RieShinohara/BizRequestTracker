@@ -29,6 +29,7 @@ watch(
 <template>
   <v-dialog
     :model-value="open"
+    :aria-label="changingOnly ? '確認先を変更' : '確認先を入力'"
     max-width="420"
     @update:model-value="(value: boolean) => !value && emit('cancel')"
   >

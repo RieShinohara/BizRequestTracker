@@ -97,6 +97,7 @@ async function save() {
   <!-- 保存していない変更があるときは、枠の外を押す・Esc では閉じない（編集中の内容が、うっかり消えないように） -->
   <v-dialog
     :model-value="category !== null"
+    :aria-label="`テンプレートの編集：${category?.name ?? ''}`"
     max-width="560"
     scrollable
     :persistent="dirty"
