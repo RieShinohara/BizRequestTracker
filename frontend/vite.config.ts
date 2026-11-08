@@ -23,5 +23,25 @@ export default defineConfig({
     environment: 'node',
     // Vuetify は、部品の中で CSS を読み込む。テストの道具に、そのまま読ませる（CSS の中身は、使わない）
     server: { deps: { inline: ['vuetify'] } },
+    // カバレッジ（テストが、コードのどの行・分岐まで通ったか）。npm run test:coverage で測る
+    coverage: {
+      provider: 'v8',
+      // 測る対象：画面のコード（src）。次のものは、測る意味がないので、外す
+      include: ['src/**/*.{ts,vue}'],
+      exclude: [
+        'src/**/*.test.ts', // テスト自身
+        'src/test-utils/**', // テストの道具
+        'src/main.ts', // 起動の入口（画面を作って、Vuetify をつなぐだけ。テストで動かす意味がない）
+        'src/env.d.ts', // 型の宣言だけ（動くコードがない）
+      ],
+      // 画面に出す表（text）と、詳しい表（html。coverage/index.html をブラウザで開くと、通らなかった行が赤く見える）
+      // しきい値（これを下回ると、テストが失敗する）。測った数字（2026-11-08：文 64.7・分岐 76.2・関数 64.4・行 66.6）より、
+      // 少し下に置く。テストを書かずにコードを増やすと、割合が下がり、CI が気づかせてくれる。ぴったりにすると、
+      // 小さな変更でも失敗して、うるさいので、余裕を持たせた。100% は、目指さない（意味のないテストを増やさない）。
+      // 数字が上がったら、ここも上げる。App.vue・RequestFilters.vue・SummaryChips.vue は、まだ 0%（部品のテストが、まだない）
+      thresholds: { statements: 60, branches: 70, functions: 60, lines: 62 },
+      // text は、100% のファイルも省かずに、すべて出す（skipFull: false）
+      reporter: [['text', { skipFull: false }], 'html'],
+    },
   },
 })
