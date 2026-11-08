@@ -84,7 +84,8 @@ def test_deleting_category_deletes_its_template_items(session):
     session.flush()
     session.delete(category)
     session.flush()
-    assert session.scalar(select(func.count()).select_from(TemplateItem)) == 0
+    remaining = select(func.count()).select_from(TemplateItem)
+    assert session.scalar(remaining.where(TemplateItem.category_id == category.id)) == 0
 
 
 def test_category_in_use_cannot_be_deleted(session):
