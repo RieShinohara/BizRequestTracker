@@ -203,7 +203,7 @@ def test_filter_by_qms(client, ids):
 
 
 def test_filter_by_category(client, ids):
-    other = client.post("/api/categories", json={"name": "動画"}).json()["id"]
+    other = client.post("/api/categories", json={"name": "別のカテゴリー（テスト）"}).json()["id"]
     create(client, ids, "通関")
     create(client, {**ids, "category_id": other}, "動画の依頼")
     assert titles(client, category_id=other) == ["動画の依頼"]

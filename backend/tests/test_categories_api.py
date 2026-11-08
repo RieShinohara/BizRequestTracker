@@ -69,7 +69,8 @@ def test_delete_also_removes_template_items(client, db):
     db.add(TemplateItem(category_id=category_id, name="項目", sort_order=1))
     db.commit()
     assert client.delete(f"/api/categories/{category_id}").status_code == 204
-    assert db.scalar(select(func.count()).select_from(TemplateItem)) == 0
+    remaining = select(func.count()).select_from(TemplateItem)
+    assert db.scalar(remaining.where(TemplateItem.category_id == category_id)) == 0
 
 
 def test_category_in_use_cannot_be_deleted_and_is_counted(client, db):
