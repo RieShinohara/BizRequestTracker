@@ -11,7 +11,7 @@ docker compose up -d db
 # 2. API（backend/ で）
 cd backend
 uv sync
-uv run alembic upgrade head   # 表を作る（初回と、マイグレーションが増えたとき）
+uv run alembic upgrade head   # 表を作る＋初期データ（7つのカテゴリーとテンプレート）を入れる（初回と、マイグレーションが増えたとき）
 uv run uvicorn app.main:app --port 8000
 # 確認： http://127.0.0.1:8000/health  →  {"status":"ok"}
 # API の一覧と試し打ち： http://127.0.0.1:8000/docs（FastAPI が自動で作る説明画面）
