@@ -31,6 +31,7 @@ npm run dev     # http://localhost:5173 を開く（ポートは固定）
 npm run test    # テスト
 npm run lint    # 静的チェック
 npm run format:check   # 整形の確認（書き換えない）。直すときは npm run format
+npm run test:coverage   # テストと、カバレッジ（テストが通った範囲）の測定。しきい値を下回ると失敗する
 npm run build   # 型チェックとビルド
 ```
 
