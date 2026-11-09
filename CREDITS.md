@@ -8,6 +8,8 @@
 |---|---|---|---|---|
 | Noto Sans JP | 画面全体の文字 | Google Inc. | SIL Open Font License 1.1（OFL-1.1）。フォントの利用・同梱・再配布が、自由にできる | npm の `@fontsource-variable/noto-sans-jp`（5.3.1）。Fontsource が、Google Fonts のフォントを、npm の部品にしたもの |
 
+画面録画の動画（`docs/media/` の GIF・MP4）の、テロップ（説明の文字）にも、同じ Noto Sans JP を使っています。動画に映る画面は、自分で作ったアプリの画面（架空のサンプルデータ）です。動画に、音楽・効果音・第三者の画像は、入っていません。
+
 ライセンスの全文は、部品の中の `LICENSE`（`frontend/node_modules/@fontsource-variable/noto-sans-jp/LICENSE`）と、https://openfontlicense.org/ にあります。
 
 ## 画像・アイコン
