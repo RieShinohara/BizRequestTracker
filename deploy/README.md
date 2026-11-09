@@ -59,6 +59,7 @@ cd /opt/bizrequesttracker/backend
 set -a; . /etc/bizrequesttracker.env; set +a
 .venv/bin/alembic upgrade head          # 表と、初期データ（7カテゴリー）が、RDS にできる
 
+sed -i 's/\r$//' /tmp/bizrequesttracker.service /tmp/nginx-bizrequesttracker.conf /tmp/seed_demo.py   # Windows の改行（CRLF）が混ざっていても、Linux 用（LF）にそろえる
 sudo cp /tmp/bizrequesttracker.service /etc/systemd/system/
 sudo cp /tmp/nginx-bizrequesttracker.conf /etc/nginx/default.d/bizrequesttracker.conf
 sudo nginx -t                           # 設定の文法チェック（ok と出ること）
