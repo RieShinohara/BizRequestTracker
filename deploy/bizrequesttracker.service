@@ -1,0 +1,26 @@
+# =============================================================
+# systemd のサービス定義：バックエンド（FastAPI。uvicorn で動かす）を、サーバーの裏で動かし続ける。
+#   - サーバーの起動時に、自動で起動する
+#   - 落ちたら、自動で起動し直す
+#   - 127.0.0.1:8000 だけで待ち受ける（外には出さない。外から来るのは、nginx 経由だけ）
+#   - DB の接続情報は、/etc/bizrequesttracker.env から読む（パスワードが入るので、リポジトリには置かない）
+# 置き場所：EC2 の /etc/systemd/system/bizrequesttracker.service
+# =============================================================
+[Unit]
+Description=BizRequestTracker backend (FastAPI)
+# ネットワークがつながってから起動する（RDS につなぐため）
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/opt/bizrequesttracker/backend
+# 接続情報（DATABASE_URL）。ファイルは、この中身だけで、権限は 600
+EnvironmentFile=/etc/bizrequesttracker.env
+# uv sync が作った Python の環境（.venv）の中の uvicorn を、直接動かす。--host 127.0.0.1 が、外に出さない設定
+ExecStart=/opt/bizrequesttracker/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -78,16 +78,16 @@ flowchart LR
 | 段階ごとに作って確認する（RDS は、スイッチで切り替え） | うまくいかないとき、どこが原因か、分かりやすい。確認のたびに消さずに、足していく |
 | 使い終わったら、`terraform destroy` で消す | 費用が、かからないようにする |
 
-## 4. アプリの置き方（EC2 の中。次の PR で、設定ファイルを `deploy/` に追加する）
+## 4. アプリの置き方（EC2 の中。設定ファイルと手順書は `deploy/`）
 
-手元で作った成果物を、EC2 に送って置く。EC2 は、メモリが少ないので、画面のビルドは、手元で行う。
+手元で作った成果物を、EC2 に送って置く。EC2 は、メモリが少ないので、画面のビルドは、手元で行う。当日の手順は、[deploy/README.md](../deploy/README.md)。
 
 | 置く物 | EC2 の中の場所（予定） | もとになる物 |
 |---|---|---|
 | バックエンド | `/opt/bizrequesttracker/backend/` | `backend/`（`.venv` と、テストは、送らない）。`uv sync` で、Python 3.13 と部品を入れる |
 | 画面のファイル | nginx の公開フォルダ | `frontend/` を `npm run build` でビルド（`dist`） |
-| バックエンドの常駐の設定（systemd） | `/etc/systemd/system/` | `deploy/`（次の PR） |
-| nginx の設定（中継と、画面の配信） | `/etc/nginx/default.d/` | `deploy/`（次の PR） |
+| バックエンドの常駐の設定（systemd） | `/etc/systemd/system/` | `deploy/bizrequesttracker.service` |
+| nginx の設定（中継と、画面の配信） | `/etc/nginx/default.d/` | `deploy/nginx-bizrequesttracker.conf` |
 | DB の接続情報（環境変数 `DATABASE_URL`） | `/etc/bizrequesttracker.env`（管理者だけが読める） | リポジトリには置かない。RDS の接続先とパスワードが入る |
 
 - DB の接続先は、**環境変数 `DATABASE_URL` で RDS に向ける**。アプリのコードは、変えない（もともと、この環境変数を優先する作り）。
@@ -107,7 +107,7 @@ BizRequestTracker/
 │  ├─ rds.tf                   データベース
 │  ├─ outputs.tf               作成後に表示する値（IP、接続先など）
 │  └─ terraform.tfvars         自分の値（コミットしない。見本は terraform.tfvars.example）
-├─ deploy/                     サーバーの中に置く設定ファイル（次の PR で追加）
+├─ deploy/                     サーバーの中に置く設定ファイルと、当日の手順書（README.md）
 └─ docs/infrastructure.md      この文書
 ```
 
