@@ -56,7 +56,7 @@
 ## 4. バージョン
 - 画面のプロトタイプ（`prototype/`）で使っているもの：Vue 3.5.44、Vuetify 4.3.2、Vite 8.3.5、TypeScript 6.0.3
 - バックエンド（2026-11-06 に決定。`backend/uv.lock` で固定）：Python 3.13、FastAPI 0.162、uvicorn 0.54、PyMySQL 1.2、SQLAlchemy 2.1、Alembic 1.20、pytest 9.2、ruff 0.17、uv 0.13
-- MySQL：**8.4**（LTS。Docker イメージ `mysql:8.4`、導入時は 8.4.13）。AWS の RDS for MySQL も 8.4 に対応している。PC での開発用は Docker で起動する（`docker-compose.yml`）
+- MySQL：**8.4**（LTS。Docker イメージ `mysql:8.4`、導入時は 8.4.13）。AWS の RDS for MySQL も 8.4 に対応している（RDS では、AWS が既定にしている **8.4.11** を使う。2026-11-10 に、AWS に問い合わせて確認。`db.t4g.micro` で選べる）。PC での開発用は Docker で起動する（`docker-compose.yml`）
 - MySQL につなぐ Python の部品（ドライバ）：**PyMySQL**（Python だけで書かれていて、Windows でも追加の準備が要らない）
 - ポート番号：API は 8000、MySQL は 3306、画面（Vite）は 5173（いずれも標準の番号）
 - 日本の祝日を判定するライブラリ：**jpholiday**（1.0.3。2026-11-07 に決定）。候補の `holidays`（0.108）と、国民の休日・成人の日などの判定を試して、同じ結果だった。日本だけで足りて、使い方が簡単で小さいため、jpholiday を選んだ。会社の休み（12/29〜1/3、8/12〜15）は、`backend/app/settings.py` に書く
