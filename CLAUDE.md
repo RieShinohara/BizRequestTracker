@@ -74,7 +74,7 @@
 
 ### 3.7 GitHub側の設定
 - マージしたら、PRのブランチを自動で削除する設定を、有効にした（2026-11-03）
-- CI（GitHub Actions）：2026-11-08 に作成（`.github/workflows/ci.yml`。`backend（pytest・ruff）` と `frontend（lint・test・build）` の2つのジョブ。PR と main への push で動く）
+- CI（GitHub Actions）：2026-11-08 に作成（`.github/workflows/ci.yml`。`backend（pytest・ruff）` と `frontend（lint・test・build）` の2つのジョブ。PR と main への push で動く）。**2026-11-11 に、`terraform（fmt・validate・tflint・trivy）` のジョブを追加（Issue #143）**。必須チェックに入れるかは、ユーザーが決める
 - **`main` ブランチの保護と、CI の必須チェックを、設定した（2026-11-08。Issue #115。ユーザーが承認）**：
   - PR が必須（`main` への直接の push は、できない。承認の人数は 0＝1人開発のため、他の人の承認は要らない）
   - **`backend（pytest・ruff）` と `frontend（lint・test・build）` が、どちらも成功しないと、マージできない**
