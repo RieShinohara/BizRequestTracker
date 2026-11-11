@@ -46,5 +46,5 @@ Issue #127。自分が作業するための手順書だった README を、**初
 
 ## やってみよう
 1. README を、GitHub の画面で開き、GIF が、動くことを確かめる
-2. `docs/media/demo-flow.mp4` を、GitHub の画面で開いて、再生する
+2. `docs/media/demo-flow.mp4` を、GitHub の画面で開いて、再生できるか試す（できない。理由は、ノート 40 の末尾）
 3. 自分のアプリで、「何が、いちばんの特徴か」を、2行で書いてみる
