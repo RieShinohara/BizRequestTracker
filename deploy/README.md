@@ -2,74 +2,54 @@
 
 AWS にアプリを置く日（デプロイ当日）の、**段階③「アプリを置く」** の手順。段階①②（ネットワーク・EC2・RDS を作る）は、[terraform/README.md](../terraform/README.md)。構成の全体は、[docs/infrastructure.md](../docs/infrastructure.md)。
 
-| ファイル | EC2 の中の置き場所 | 役割 |
-|---|---|---|
-| `bizrequesttracker.service` | `/etc/systemd/system/` | バックエンド（uvicorn）を、裏で動かし続ける。落ちたら、自動で起動し直す |
-| `nginx-bizrequesttracker.conf` | `/etc/nginx/default.d/bizrequesttracker.conf` | 画面の配信と、`/api/`・`/health` の中継。`/docs` などは 404 |
-| `seed_demo.py` | （どこでもよい。一時的に送る） | （任意）録画用に、架空の依頼を入れる |
+> **この手順書は、2026-11-10 の実際のデプロイで使った流れ**を元にしている。Terraform は「入れ物」を作り、この手順は「アプリを置いて、動かす」（デプロイ）。
 
-**秘密は、ここに置かない。** DB のパスワードを含む接続情報は、EC2 の中の `/etc/bizrequesttracker.env` に、手で書く。
+| ファイル | 役割 |
+|---|---|
+| `setup.sh` | EC2 の中で、アプリを置いて動かすまでを、まとめて行う（手順 3）。DB のパスワードは、実行中に入力する |
+| `bizrequesttracker.service` | systemd の設定。バックエンド（uvicorn）を、裏で動かし続ける。落ちたら、自動で起動し直す（`/etc/systemd/system/` に置かれる） |
+| `nginx-bizrequesttracker.conf` | nginx の設定。画面の配信と、`/api/`・`/health` の中継。`/docs` などは 404（`/etc/nginx/default.d/` に置かれる） |
+| `seed_demo.py` | （任意）録画用に、架空の依頼を入れる |
+
+**秘密は、ここに置かない。** DB のパスワードは、`setup.sh` の実行中に入力する（EC2 の中の `/etc/bizrequesttracker.env`、権限 600 に書かれる）。
 
 ## 前提
-- 段階②まで終わっている（`create_database = true`。`terraform output` で、IP と `database_url_template` が出る）
-- 手元の PowerShell（このリポジトリの直下）で、`<IP>` は、`terraform output public_ip` の値。**IP は、チャットに貼らない**
-- SSH の秘密鍵は、`~/.ssh/id_ed25519`（`terraform output ssh_command` に、つなぎ方が出る）
+- 段階②まで終わっている（`create_database = true`。`terraform output` で、IP と RDS のアドレスが出る）
+- **手元の PowerShell** で行う。`<IP>` は `terraform output public_ip`、`<RDS のアドレス>` は `terraform output rds_endpoint` の値。**IP とパスワードは、チャットに貼らない**
+- SSH の秘密鍵は `~/.ssh/id_ed25519`。**鍵にパスフレーズをかけているときは、`ssh`・`scp` のたびに、入力が要る**（AI は代わりにできない。自分の PowerShell で行う）。そのため、**送る物は、1つのファイルにまとめる**（入力が1回で済む）
+- 新しい PowerShell は、`terraform` フォルダにいない。値を取るときは `terraform -chdir=terraform output -raw public_ip` と書く。変数に入れると楽：
+  ```powershell
+  $ip = terraform -chdir=terraform output -raw public_ip
+  # 使うとき： "ec2-user@${ip}"
+  ```
 
 ## 手順
 
-### 1. 手元で、成果物を作る（画面のビルド・バックエンドの梱包）
+### 1. 手元で、1つのファイル（bundle.tgz）にまとめる
 ```powershell
-cd frontend; npm.cmd ci; npm.cmd run build; cd ..
-tar -czf $env:TEMP\backend.tgz --exclude=.venv --exclude=tests --exclude=__pycache__ --exclude=.pytest_cache --exclude=.ruff_cache --exclude=.env --exclude=.coverage -C backend .
+cd frontend; npm.cmd ci; npm.cmd run build; cd ..        # 画面のビルド（Python は、ビルド不要）
+& "$env:SystemRoot\System32\tar.exe" -czf $env:TEMP\bundle.tgz --exclude=.venv --exclude=tests --exclude=__pycache__ --exclude=.pytest_cache --exclude=.ruff_cache --exclude=.env --exclude=.coverage backend deploy -C frontend dist
 ```
-- `.env` や `.venv` は、送らない（秘密と、手元専用の環境のため）
+- 中身は、`backend/`・`deploy/`・`dist/`（画面のビルド結果）。`.env` や `.venv` は、入れない（秘密と、手元専用の環境のため）
+- **Windows 標準の `tar.exe` を、場所を指定して使う。** Git Bash の `tar` は、`C:` を「別のサーバー」と誤解する（使うなら `--force-local` が要る）
 
-### 2. EC2 に送る
+### 2. EC2 に送って、つなぐ
 ```powershell
-scp -i ~/.ssh/id_ed25519 $env:TEMP\backend.tgz ec2-user@<IP>:/tmp/
-scp -i ~/.ssh/id_ed25519 -r frontend\dist ec2-user@<IP>:/tmp/dist
-scp -i ~/.ssh/id_ed25519 deploy\bizrequesttracker.service deploy\nginx-bizrequesttracker.conf deploy\seed_demo.py ec2-user@<IP>:/tmp/
+scp -i ~/.ssh/id_ed25519 $env:TEMP\bundle.tgz ec2-user@${ip}:/tmp/
+ssh -i ~/.ssh/id_ed25519 ec2-user@${ip}
 ```
 初めてのつなぎでは、「このホストを信頼しますか」と聞かれる。`yes`。
 
-### 3. EC2 の中で、置く（`ssh` でつなぐ）
+### 3. EC2 の中で、置いて、動かす
 ```bash
-# 初回の準備が終わっているか（user_data の完了。nginx と uv が入っている）
-cloud-init status --wait ; nginx -v ; uv --version
-
-# バックエンド
-sudo mkdir -p /opt/bizrequesttracker/backend
-sudo chown -R ec2-user: /opt/bizrequesttracker
-tar -xzf /tmp/backend.tgz -C /opt/bizrequesttracker/backend
-cd /opt/bizrequesttracker/backend && uv sync --no-dev        # Python 3.13 と部品が入る（数分）
-
-# 画面
-sudo rm -rf /usr/share/nginx/html/*
-sudo cp -r /tmp/dist/* /usr/share/nginx/html/
-
-# 接続情報（<パスワード> と <RDS のアドレス> は、自分で入れる。terraform output database_url_template が見本）
-sudo install -m 600 -o ec2-user /dev/null /etc/bizrequesttracker.env
-nano /etc/bizrequesttracker.env
-#   中身は1行だけ：  DATABASE_URL=mysql+pymysql://app_admin:<パスワード>@<RDS のアドレス>:3306/biz_request_tracker?charset=utf8mb4
+cloud-init status --wait ; nginx -v ; uv --version     # 初回の準備（user_data）が終わっているか
+mkdir -p ~/bundle && tar -xzf /tmp/bundle.tgz -C ~/bundle && cd ~/bundle
+sed -i 's/\r$//' deploy/setup.sh                        # Windows の改行（CRLF）が混ざっていても動くように
+bash deploy/setup.sh <RDS のアドレス>                    # 途中で、DB のパスワードを聞かれる（画面には出ない）
 ```
+`setup.sh` が、次を順に行う：バックエンドを置く（`uv sync`）→ 画面を置く → 接続情報を書く → 表と初期データを作る（`alembic upgrade head`）→ systemd と nginx で起動する。
 
-### 4. 表を作って、起動する
-```bash
-cd /opt/bizrequesttracker/backend
-set -a; . /etc/bizrequesttracker.env; set +a
-.venv/bin/alembic upgrade head          # 表と、初期データ（7カテゴリー）が、RDS にできる
-
-sed -i 's/\r$//' /tmp/bizrequesttracker.service /tmp/nginx-bizrequesttracker.conf /tmp/seed_demo.py   # Windows の改行（CRLF）が混ざっていても、Linux 用（LF）にそろえる
-sudo cp /tmp/bizrequesttracker.service /etc/systemd/system/
-sudo cp /tmp/nginx-bizrequesttracker.conf /etc/nginx/default.d/bizrequesttracker.conf
-sudo nginx -t                           # 設定の文法チェック（ok と出ること）
-sudo systemctl daemon-reload
-sudo systemctl enable --now bizrequesttracker
-sudo systemctl enable --now nginx
-sudo systemctl reload nginx
-```
-
-### 5. 確認する
+### 4. 確認する
 EC2 の中：
 ```bash
 systemctl status bizrequesttracker --no-pager     # active (running)
@@ -83,11 +63,14 @@ ss -tln | grep 8000                               # 127.0.0.1:8000 だけ（0.0.
 
 つまずいたら：`journalctl -u bizrequesttracker -n 50 --no-pager`（バックエンドのログ）、`sudo tail /var/log/nginx/error.log`。
 
-### 6. （任意）録画用に、架空の依頼を入れる
+### 5. （任意）録画用に、架空の依頼を入れる
 ```bash
-python3 /tmp/seed_demo.py     # 空の状態で、1回だけ。依頼9件・依頼者5人が入る
+python3 ~/bundle/deploy/seed_demo.py     # 空の状態で、1回だけ。依頼9件・依頼者5人が入る
 ```
-入れ直したいときは、`alembic downgrade base` → `upgrade head` で空に戻してから。
+- **依頼が1件でもあると、止まる**（二重に入るのを防ぐ安全装置）。手で作った依頼は、先に消す
+- 入れ直したいときは、`cd /opt/bizrequesttracker/backend && set -a; . /etc/bizrequesttracker.env; set +a; .venv/bin/alembic downgrade base && .venv/bin/alembic upgrade head` で、空に戻してから
 
 ## 片づけ（当日の最後に必ず）
 手元で `terraform destroy`（先に、ユーザーが承認する）。そのあと、AWS に残っていないか確かめる（手順は、[terraform/README.md](../terraform/README.md)）。EC2 の中に入れたデータも、一緒になくなる。
+
+次に作るときは、`terraform.tfvars` の `create_database` を、段階①のために `false` に戻し、`my_ip` が今の IP か確かめる。

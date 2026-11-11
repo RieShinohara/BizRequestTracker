@@ -1,0 +1,3 @@
+# サーバー（Linux）に送る設定ファイルは、Windows でも、改行を LF にそろえる
+# （CRLF のままだと、シェルスクリプトが動かない）
+deploy/** text eol=lf
