@@ -51,6 +51,7 @@ AWS に作る物（ネットワーク、サーバー、データベース）を�
 | 作ったあとの値 | `terraform output` | IP や接続先が出る。人に見せるときは、隠す |
 
 - **`terraform fmt` は、`.tf` ファイルを指定して実行する**（例：`terraform fmt -check ec2.tf vpc.tf`）。引数なしだと、`terraform.tfvars`（自分の IP と DB のパスワード）も対象になり、`-diff` では、その中身が画面に出る。
+- **予告の結果を、ファイルに保存するときは、名前の最後を必ず `.tfplan` にする**（例：`terraform plan -out=stage1.tfplan`）。`.gitignore` が除外するのは `*.tfplan` だけなので、`-out=tfplan`（拡張子なし）と書くと、除外されず、コミットされかける（デプロイ当日に、実際に起きた）。保存したファイルには、設定の値が含まれることがある。`git status` で、`.tfplan` が出ていないことを確かめる。
 - **使い終わったら、`destroy` で消す。** 消したあとは、`terraform state list` が空か、AWS CLI の読み取り（`aws ec2 describe-instances` など）で、残っていないかを確かめる。
 
 ## 点検（手元で、使い捨ての Docker で行う例）
