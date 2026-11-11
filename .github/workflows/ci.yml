@@ -2,6 +2,7 @@
 # 手元でやっている確認（CLAUDE.md の 5「開発のコマンド」）と、同じものを、GitHub の上で行う。
 #   backend  : pytest（MySQL を、CI の中で起動する）、ruff check、ruff format --check
 #   frontend : lint、format:check、test、build
+#   terraform: fmt、validate、tflint、trivy（AWS の構成のコードの点検。AWS には、つながない）
 # 使う部品（uses）は、版の名前ではなく、コミットの ID で固定している（後ろのコメントが、版の名前）。
 # 差し替えられた部品を、知らずに使ってしまうのを防ぐため。
 name: CI
@@ -94,3 +95,46 @@ jobs:
       # テストは1回だけ動かす（npm run test を、置き換えている）
       - run: npm run test:coverage
       - run: npm run build
+
+  # Terraform（AWS の構成のコード）の点検。AWS には、つながない（秘密も認証情報も使わない。読むだけ）。
+  # 道具は、使い捨ての Docker で動かす。版は、手元で確かめた物に固定している（勝手に変わって、CI が突然失敗しないように）。
+  # 上げるときは、手元で動かして確かめてから、ここを書き換える。手元と同じ手順：docs/quality-review.md の 9 章
+  terraform:
+    name: terraform（fmt・validate・tflint・trivy）
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: terraform
+    env:
+      TERRAFORM_IMAGE: hashicorp/terraform:1.16.6
+      TFLINT_IMAGE: ghcr.io/terraform-linters/tflint:v0.65.0
+      TRIVY_IMAGE: aquasec/trivy:0.76.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # 整形が、そろっているか。ずれていたら、手元で、terraform fmt（.tf ファイルを指定）を実行して直す
+      - name: terraform fmt
+        run: docker run --rm -v "$PWD:/work" -w /work "$TERRAFORM_IMAGE" fmt -check -diff
+      # 文法と、部品のつじつま（AWS には、つながない。部品の取得だけ、ネットに出る）
+      - name: terraform validate
+        run: >-
+          docker run --rm -v "$PWD:/work" -w /work --entrypoint sh "$TERRAFORM_IMAGE"
+          -c "terraform init -backend=false -input=false && terraform validate"
+      # 書き方の点検（Terraform 自体と、AWS 用のルール。プラグインの版は .tflint.hcl で固定）
+      - name: tflint
+        run: >-
+          docker run --rm -e GITHUB_TOKEN -v "$PWD:/work" -w /work --entrypoint sh "$TFLINT_IMAGE"
+          -c "tflint --init && tflint"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # セキュリティの弱点の探索。「意図した設定」は .trivyignore に理由つきで書いてある。
+      # スイッチ（create_database）が false のときは RDS を調べないので、true にした場合も、ダミーの値で調べる
+      - name: trivy（create_database = false）
+        run: >-
+          docker run --rm -v "$PWD:/work" -w /work "$TRIVY_IMAGE"
+          config . --ignorefile /work/.trivyignore --exit-code 1
+      - name: trivy（create_database = true。ダミーの値）
+        run: |
+          printf 'my_ip = "203.0.113.10/32"\ndb_password = "dummy-password-1234"\ncreate_database = true\n' > "$RUNNER_TEMP/dummy.tfvars"
+          docker run --rm -v "$PWD:/work" -v "$RUNNER_TEMP/dummy.tfvars:/dummy.tfvars:ro" -w /work "$TRIVY_IMAGE" \
+            config . --tf-vars /dummy.tfvars --ignorefile /work/.trivyignore --exit-code 1
