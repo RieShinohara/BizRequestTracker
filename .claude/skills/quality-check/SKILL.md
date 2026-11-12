@@ -45,7 +45,7 @@ description: このプロジェクトの品質チェックの手順。ユーザ�
 - **Terraform**（`terraform/`、`deploy/`）：入口（ingress）に `0.0.0.0/0` がないか（CLAUDE.md 第5章）、RDS が公開されていないか、秘密の扱い（`sensitive`、`.gitignore` が `terraform.tfvars`・`*.tfstate`・`*.tfplan` を除外しているか、追跡にも履歴にも入っていないか）、変数の検証（MySQL の制限：管理者名 16 文字、パスワード 41 文字など）、費用がかかる物（NAT Gateway など）を作っていないか、部品の版の固定（`.terraform.lock.hcl`、tflint のプラグインの版）、コメントが今の状態と合っているか（「あとで足す」のまま残っていないか）、`user_data.sh` と `deploy/`（`setup.sh`・nginx・systemd）に秘密が入っていないか、`deploy/` の設定と実際の構成の一致、`docs/infrastructure.md`・`terraform/README.md`・`deploy/README.md` とのずれ、CI の `terraform` ジョブがあるか。**読み取りだけ。`apply` と `destroy` は実行しない**
 - **文書**：`docs/`（要件、機能一覧、ユースケース、画面設計、データ設計、API 設計、非機能、技術スタック）、`README.md`、`backend/README.md`、`CREDITS.md`、`CLAUDE.md` の「状況」を、実装と突き合わせる。API のパスと項目、入力の制約、テーブル、画面の項目と文言、バージョン、コマンド、リンク。**「文書に書いていない実装済みの機能」と、「実装していないのに書いてある機能」の両方**を探す
 - **公開リポジトリとしての確認**（CLAUDE.md 第4章）
-  - パスワード・キー・個人情報が、コミットされていないか（履歴も：`git log -p -S` など）。`.env`・`*.sql`・`*.dump`・`.claude/settings*.json` が追跡されていないか（`git ls-files`）
+  - パスワード・キー・個人情報が、コミットされていないか（履歴も：`git log -p -S` など）。`.env`・`*.sql`・`*.dump`・`.claude/settings.local.json` が追跡されていないか（`git ls-files`）。`.claude/settings.json` は、コミットしてよいが、中身に秘密・個人情報・自分の PC のパスがないか、読んで確かめる
   - サンプルデータ、テスト、文書、`prototype/` に、実在の会社名・人名・依頼内容がないか
   - 画像・フォントのライセンスと出典が、`CREDITS.md` にあるか
   - スクリーンショットや録画に、IP アドレス・アカウント ID が映っていないか
