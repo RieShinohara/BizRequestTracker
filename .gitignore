@@ -3,9 +3,10 @@
 .env.*
 !.env.example
 
-# Claude Code（.claude/skills/ だけはコミットする）
+# Claude Code（.claude/skills/ と .claude/settings.json はコミットする。settings.local.json は個人用なので、除外のまま）
 .claude/*
 !.claude/skills/
+!.claude/settings.json
 
 # データベースの中身・書き出し
 *.sql
